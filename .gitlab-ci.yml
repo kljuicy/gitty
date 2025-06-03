@@ -24,6 +24,7 @@ stages:
   - staging
   - prepare
   - release
+  - mirror
 
 # Cache node_modules for faster builds
 cache:
@@ -396,6 +397,37 @@ publish:
   environment:
     name: production
     url: https://www.npmjs.com/package/@kljuicy/gitty
+
+# Mirror to GitHub (main and develop branches)
+mirror-github:
+  stage: mirror
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_BRANCH == "develop"
+  variables:
+    GIT_DEPTH: 0 # Full git history for mirroring
+  script:
+    - |
+      echo "🔄 Mirroring to GitHub..."
+
+      # Check if GITHUB_TOKEN is set
+      if [ -z "$GITHUB_TOKEN" ]; then
+        echo "❌ Error: GITHUB_TOKEN environment variable is not set."
+        echo "Please set GITHUB_TOKEN in GitLab CI/CD variables."
+        exit 1
+      fi
+
+      echo "🔑 Setting up GitHub authentication..."
+      git remote add github "https://oauth2:${GITHUB_TOKEN}@github.com/kljuicy/gitty.git"
+
+      echo "📤 Pushing ${CI_COMMIT_BRANCH} to GitHub..."
+      git push github ${CI_COMMIT_BRANCH}
+
+      echo "🏷️ Pushing tags to GitHub..."
+      git push github --tags
+
+      echo "✅ Successfully mirrored to GitHub!"
+      echo "🔗 GitHub repo: https://github.com/kljuicy/gitty"
 
 # Rules for when to run the pipeline
 workflow:
