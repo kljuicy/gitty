@@ -40,9 +40,9 @@
     "gpt",
     "conventional-commits"
   ],
-  "author": "Your Name",
+  "author": "Giuseppe Aquino",
   "license": "MIT",
-  "homepage": "https://gitlab.com/kljuicy/gitty",
+  "homepage": "https://gitty.sh",
   "repository": {
     "type": "git",
     "url": "git+https://gitlab.com/kljuicy/gitty.git"

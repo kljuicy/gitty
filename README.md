@@ -4,8 +4,6 @@
 
 [![npm version](https://img.shields.io/npm/v/@kljuicy/gitty.svg)](https://www.npmjs.com/package/@kljuicy/gitty)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Pipeline](https://gitlab.com/kljuicy/gitty/badges/develop/pipeline.svg)](https://gitlab.com/kljuicy/gitty/-/pipelines)
-[![Coverage](https://gitlab.com/kljuicy/gitty/badges/develop/coverage.svg)](https://gitlab.com/kljuicy/gitty/-/pipelines)
 [![Platform Support](https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20Windows-lightgrey)](https://gitlab.com/kljuicy/gitty)
 
 ---
