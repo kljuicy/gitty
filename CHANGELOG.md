@@ -1,5 +1,11 @@
 # @kljuicy/gitty
 
+## 1.0.1
+
+### Patch Changes
+
+- !8 - GITTY#TECH: General after release cleanup
+
 ## 1.0.0
 
 ### Major Changes
