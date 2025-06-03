@@ -340,23 +340,11 @@ test-package:
 
       echo "✅ Package testing completed successfully!"
       echo "🎯 Package is ready for npm publishing!"
-
-pages:
-  stage: release
-  pages:
-    publish: public
-  rules:
-    - if: $CI_COMMIT_BRANCH == "main" && $CI_COMMIT_MESSAGE =~ /^page:/
-  script:
-    - |
-      echo "🌐 Deploying GitLab Pages site..."
-      echo " Site ready for deployment"
+      # Mirror to GitHub (main and develop branches)
 
 # Mirror to GitHub (main and develop branches)
 mirror-github:
   stage: staging
-  needs:
-    - test-package
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
     - if: $CI_COMMIT_BRANCH == "develop"
@@ -384,6 +372,17 @@ mirror-github:
 
       echo "✅ Successfully mirrored to GitHub!"
       echo "🔗 GitHub repo: https://github.com/kljuicy/gitty"
+
+pages:
+  stage: release
+  pages:
+    publish: public
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main" && $CI_COMMIT_MESSAGE =~ /^page:/
+  script:
+    - |
+      echo "🌐 Deploying GitLab Pages site..."
+      echo " Site ready for deployment"
 
 # Manual publishing step to npm (only on main branch)
 publish:
