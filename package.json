@@ -1,0 +1,88 @@
+{
+  "name": "@kljuicy/gitty",
+  "version": "1.0.0",
+  "description": "🐥 Gitty - Your cute lil AI-powered Git sidekick",
+  "type": "module",
+  "main": "./dist/index.js",
+  "bin": {
+    "gitty": "./dist/cli.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "dev": "tsx src/cli.ts",
+    "build": "tsup",
+    "serve": "http-server public -p 3000 -o",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:ci": "vitest run",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest run --coverage",
+    "test:integration": "node integration-tests/run-tests.js",
+    "test:all": "npm run test:ci && npm run test:integration",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src/",
+    "lint:fix": "eslint src/ --fix",
+    "format": "prettier --write \"src/**/*.ts\"",
+    "format:check": "prettier --check \"src/**/*.ts\"",
+    "prepublishOnly": "pnpm build",
+    "changeset": "changeset",
+    "version": "changeset version"
+  },
+  "keywords": [
+    "git",
+    "commit",
+    "ai",
+    "openai",
+    "cli",
+    "developer-tools",
+    "gpt",
+    "conventional-commits"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "homepage": "https://gitlab.com/kljuicy/gitty",
+  "repository": {
+    "type": "git",
+    "url": "git+https://gitlab.com/kljuicy/gitty.git"
+  },
+  "bugs": {
+    "url": "https://gitlab.com/kljuicy/gitty/issues"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "packageManager": "pnpm@10.6.1",
+  "dependencies": {
+    "@google/generative-ai": "^0.21.0",
+    "chalk": "^5.4.1",
+    "commander": "^14.0.0",
+    "conf": "^13.1.0",
+    "inquirer": "^12.6.3",
+    "openai": "^4.103.0",
+    "ora": "^8.2.0",
+    "simple-git": "^3.27.0",
+    "zod": "^3.25.36"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.29.4",
+    "@eslint/js": "^9.28.0",
+    "@types/inquirer": "^9.0.8",
+    "@types/mock-fs": "^4.13.4",
+    "@types/node": "^22.15.24",
+    "@typescript-eslint/eslint-plugin": "^8.33.0",
+    "@typescript-eslint/parser": "^8.33.0",
+    "@vitest/coverage-v8": "3.1.4",
+    "@vitest/ui": "^3.1.4",
+    "changelog-gitlab": "^0.4.0",
+    "eslint": "^9.28.0",
+    "http-server": "^14.1.1",
+    "mock-fs": "^5.5.0",
+    "prettier": "^3.5.3",
+    "tsup": "^8.5.0",
+    "tsx": "^4.19.4",
+    "typescript": "^5.8.3",
+    "vitest": "^3.1.4"
+  }
+}

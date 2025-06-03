@@ -1,0 +1,26 @@
+{
+  "name": "Gitty - AI-Powered Git Commit Tool",
+  "short_name": "Gitty",
+  "description": "Your snarky, AI-powered CLI bestie that helps you write commit messages that don't make your team cringe.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1B1B1B",
+  "theme_color": "#9B5DE5",
+  "icons": [
+    {
+      "src": "assets/gitty-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "assets/gitty-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable any"
+    }
+  ],
+  "categories": ["developer", "productivity", "utilities"],
+  "lang": "en",
+  "orientation": "portrait-primary"
+}

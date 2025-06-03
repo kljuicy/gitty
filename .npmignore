@@ -1,0 +1,27 @@
+# Source files
+src/
+tsconfig.json
+tsup.config.ts
+
+# Development files
+.gitignore
+.gitlab-ci.yml
+RELEASE.md
+vitest.config.ts
+
+# Test files
+**/*.test.ts
+**/*.spec.ts
+
+# Editor files
+.vscode/
+.idea/
+
+# Build artifacts
+dist/bin/
+
+# Misc
+.DS_Store
+*.log
+node_modules/
+pnpm-lock.yaml 

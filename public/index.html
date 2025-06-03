@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gitty - Your cute lil AI-powered Git sidekick</title>
+    <meta name="description" content="That commit? Mid. Let Gitty fix it. AI-powered CLI tool for better Git commit messages.">
+    
+    <!-- Favicons -->
+    <link rel="icon" type="image/png" sizes="32x32" href="assets/gitty-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="assets/gitty-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/gitty-180x180.png">
+    <link rel="manifest" href="site.webmanifest">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300..700&family=Manrope:wght@200..800&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+
+    <!-- Custom Tailwind Configuration -->
+    <script src="js/tailwind.js"></script>
+</head>
+
+<body class="bg-white dark:bg-gitty-dark text-gray-900 dark:text-white font-body transition-colors duration-300">
+    <!-- Hero Section -->
+    <section class="min-h-screen gradient-bg flex items-center justify-center relative overflow-hidden">
+        <div class="absolute inset-0 bg-black bg-opacity-10"></div>
+        <div class="container mx-auto px-6 text-center relative z-10">
+            <div class="mb-8">
+                <div class="flex justify-center mb-6">
+                    <img src="assets/gitty-256x256.png" alt="Gitty Mascot" class="w-32 h-32 md:w-40 md:h-40 gitty-mascot animate-bounce">
+                </div>
+                <h1 class="font-display text-6xl md:text-8xl font-bold text-white mb-4 glow-text">
+                    Gitty
+                </h1>
+                <div class="text-2xl md:text-3xl text-white font-medium mb-6">
+                    <span class="typing-animation inline-block">That commit? Mid. Let Gitty fix it.</span>
+                </div>
+            </div>
+            
+            <p class="text-xl md:text-2xl text-white max-w-2xl mx-auto mb-8 font-light">
+                Your cute lil AI-powered Git sidekick that helps you write commit messages that don't make your team cringe.
+            </p>
+            
+            <div class="flex flex-col gap-4 justify-center items-center">
+                <div class="bg-gitty-dark px-6 py-3 rounded-lg font-mono text-gitty-terminal text-lg flex items-center">
+                    <i class="fas fa-terminal mr-2"></i>npm install -g @kljuicy/gitty
+                    <button onclick="navigator.clipboard.writeText('npm install -g @kljuicy/gitty')" class="ml-3 text-gray-400 hover:text-white">
+                        <i class="fas fa-copy"></i>
+                    </button>
+                </div>
+                <div class="flex gap-4">
+                    <a href="#demo" class="border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-gitty-violet transition-colors">
+                        See Demo <i class="fas fa-play ml-2"></i>
+                    </a>
+                    <a href="#install" class="bg-white text-gitty-violet px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors">
+                        Get Started <i class="fas fa-arrow-down ml-2"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Floating Elements -->
+        <div class="absolute bottom-20 right-10 text-4xl animate-pulse">✨</div>
+    </section>
+
+    <!-- Navigation -->
+    <nav class="sticky top-0 bg-white dark:bg-gitty-dark shadow-lg z-40 border-b border-gray-200 dark:border-gray-700">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <img src="assets/gitty-32x32.png" alt="Gitty" class="w-8 h-8 gitty-mascot">
+                    <div class="font-display text-2xl font-bold ml-[5px] text-gitty-violet">
+                        Gitty
+                    </div>
+                </div>
+                
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="#install" class="hover:text-gitty-violet transition-colors">Install</a>
+                    <a href="#why" class="hover:text-gitty-violet transition-colors">Why Gitty?</a>
+                    <a href="#demo" class="hover:text-gitty-violet transition-colors">Demo</a>
+                    <a href="#docs" class="hover:text-gitty-violet transition-colors">Docs</a>
+                </div>
+                
+                <!-- Dark Mode Toggle -->
+                <button id="dark-mode-toggle" class="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors flex items-center justify-center">
+                    <i class="fas fa-moon dark:hidden text-gray-700"></i>
+                    <i class="fas fa-sun hidden dark:inline text-yellow-400"></i>
+                </button>
+            </div>
+            
+            <!-- Mobile Menu -->
+            <div class="md:hidden mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                <div class="flex flex-wrap justify-center space-x-6">
+                    <a href="#install" class="hover:text-gitty-violet transition-colors">Install</a>
+                    <a href="#why" class="hover:text-gitty-violet transition-colors">Why Gitty?</a>
+                    <a href="#demo" class="hover:text-gitty-violet transition-colors">Demo</a>
+                    <a href="#docs" class="hover:text-gitty-violet transition-colors">Docs</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Installation Section -->
+    <section id="install" class="py-20 bg-gray-50 dark:bg-gray-900">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-16">
+                <h2 class="font-display text-4xl md:text-5xl font-bold text-gitty-violet mb-6">
+                    Ready to Level Up Your Commits?
+                </h2>
+                <p class="text-xl text-gray-600 dark:text-gray-300">
+                    Get started in less than 2 minutes. No joke.
+                </p>
+            </div>
+            
+            <div class="max-w-4xl mx-auto">
+                <div class="grid md:grid-cols-2 gap-12">
+                    <!-- Install Steps -->
+                    <div class="space-y-8">
+                        <div class="flex items-start space-x-4">
+                            <div class="bg-gitty-violet text-white rounded-full w-12 h-12 flex items-center justify-center font-bold text-xl">1</div>
+                            <div>
+                                <h3 class="text-xl font-semibold mb-2">Install Gitty</h3>
+                                <div class="bg-gitty-dark text-gitty-terminal p-4 rounded-lg font-mono">
+                                    npm install -g @kljuicy/gitty
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start space-x-4">
+                            <div class="bg-gitty-violet text-white rounded-full w-12 h-12 flex items-center justify-center font-bold text-xl">2</div>
+                            <div>
+                                <h3 class="text-xl font-semibold mb-2">Set up your AI provider</h3>
+                                <div class="bg-gitty-dark text-gitty-terminal p-4 rounded-lg font-mono space-y-2">
+                                    <div># For OpenAI (recommended)</div>
+                                    <div>gitty --set-key --provider openai</div>
+                                    <div class="text-gray-400"># Or for Google Gemini (free tier!)</div>
+                                    <div>gitty --set-key --provider gemini</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start space-x-4">
+                            <div class="bg-gitty-mint text-dark rounded-full w-12 h-12 flex items-center justify-center font-bold text-xl">3</div>
+                            <div>
+                                <h3 class="text-xl font-semibold mb-2">Start committing like a pro</h3>
+                                <div class="bg-gitty-dark text-gitty-terminal p-4 rounded-lg font-mono space-y-2">
+                                    gitty
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Requirements -->
+                    <div class="bg-white dark:bg-gitty-dark p-8 rounded-xl shadow-lg">
+                        <h3 class="text-2xl font-semibold mb-6 text-gitty-violet">
+                            <i class="fas fa-clipboard-check mr-3"></i>Requirements
+                        </h3>
+                        <ul class="space-y-4">
+                            <li class="flex items-center space-x-3">
+                                <i class="fas fa-check text-gitty-mint"></i>
+                                <span>Node.js 22+ (Current LTS)</span>
+                            </li>
+                            <li class="flex items-center space-x-3">
+                                <i class="fas fa-check text-gitty-mint"></i>
+                                <span>Git installed and ready</span>
+                            </li>
+                            <li class="flex items-center space-x-3">
+                                <i class="fas fa-check text-gitty-mint"></i>
+                                <span>API key for OpenAI or Gemini</span>
+                            </li>
+                            <li class="flex items-center space-x-3">
+                                <i class="fas fa-heart text-gitty-pink"></i>
+                                <span>A sense of humor (optional but recommended)</span>
+                            </li>
+                        </ul>
+                        
+                        <div class="mt-8 p-4 bg-gitty-yellow bg-opacity-20 rounded-lg">
+                            <p class="text-sm">
+                                <i class="fas fa-lightbulb text-gitty-yellow mr-2"></i>
+                                <strong>Pro tip:</strong> Gemini has a generous free tier, perfect for trying Gitty!
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Why Gitty Section -->
+    <section id="why" class="py-20">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-16">
+                <h2 class="font-display text-4xl md:text-5xl font-bold text-gitty-violet mb-6">
+                    Why Gitty?
+                </h2>
+                <p class="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+                    Let me tell you why we're gonna be besties! Ever stared at your Git diff wondering how to explain your 3 AM coding spree?
+                </p>
+            </div>
+            
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                <div class="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow">
+                    <div class="text-gitty-violet text-4xl mb-4">
+                        <i class="fas fa-magic"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-4">Smart Commits That Don't Suck</h3>
+                    <p class="text-gray-600 dark:text-gray-300">
+                        I turn your chaotic diffs into poetry. No more "updated stuff" commits – we're better than that!
+                    </p>
+                </div>
+                
+                <div class="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow">
+                    <div class="text-gitty-pink text-4xl mb-4">
+                        <i class="fas fa-palette"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-4">Your Style, Your Rules</h3>
+                    <p class="text-gray-600 dark:text-gray-300">
+                        Like your commits short and sweet? Or detailed enough to write a novel? I adapt to your style.
+                    </p>
+                </div>
+                
+                <div class="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow">
+                    <div class="text-gitty-mint text-4xl mb-4">
+                        <i class="fas fa-rocket"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-4">Zero Hassle Setup</h3>
+                    <p class="text-gray-600 dark:text-gray-300">
+                        Because life's complicated enough already. Quick install, easy config, and you're ready to commit like a pro.
+                    </p>
+                </div>
+                
+                <div class="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow">
+                    <div class="text-gitty-violet text-4xl mb-4">
+                        <i class="fas fa-cogs"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-4">Different Vibes for Different Projects</h3>
+                    <p class="text-gray-600 dark:text-gray-300">
+                        Work mode? Personal project? Each needs its own flavor. My presets let you switch between professional and fun.
+                    </p>
+                </div>
+                
+                <div class="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow">
+                    <div class="text-gitty-pink text-4xl mb-4">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-4">AI Provider? Your Choice!</h3>
+                    <p class="text-gray-600 dark:text-gray-300">
+                        Switch between OpenAI and Gemini like a DJ switching tracks. Use what works best for you!
+                    </p>
+                </div>
+                
+                <div class="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow">
+                    <div class="text-gitty-mint text-4xl mb-4">
+                        <i class="fas fa-heart"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-4">Making Git Fun Again</h3>
+                    <p class="text-gray-600 dark:text-gray-300">
+                        Because Git doesn't have to be boring. I bring personality to your terminal, one commit at a time.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CLI Demo Section -->
+    <section id="demo" class="py-20 bg-gray-50 dark:bg-gray-900">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-16">
+                <h2 class="font-display text-4xl md:text-5xl font-bold text-gitty-violet mb-6">
+                    See Gitty in Action
+                </h2>
+                <p class="text-xl text-gray-600 dark:text-gray-300">
+                    Watch how Gitty turns your messy diffs into commit message gold.
+                </p>
+            </div>
+            
+            <div class="max-w-4xl mx-auto">
+                <div class="bg-gitty-dark rounded-xl p-8 terminal-shadow">
+                    <div class="flex items-center mb-6">
+                        <div class="flex space-x-2">
+                            <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                            <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                            <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                        </div>
+                        <div class="ml-4 text-gray-400 font-mono text-sm">Terminal</div>
+                    </div>
+                    
+                    <div id="terminal-demo" class="font-mono text-sm space-y-2 demo-terminal">
+                        <!-- Terminal content will be populated by JavaScript -->
+                    </div>
+                    
+                    <div class="mt-8 text-center">
+                        <button id="demo-restart" class="bg-gitty-violet hover:bg-purple-600 text-white px-6 py-2 rounded-lg transition-colors">
+                            <i class="fas fa-play mr-2"></i>Restart Demo
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Cost Information -->
+    <section class="py-20">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-16">
+                <h2 class="font-display text-4xl md:text-5xl font-bold text-gitty-violet mb-6">
+                    Cheaper Than Your Coffee Addiction
+                </h2>
+                <p class="text-xl text-gray-600 dark:text-gray-300">
+                    Let me help you pick the perfect AI bestie for your wallet!
+                </p>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+                <div class="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-lg text-center">
+                    <div class="text-4xl mb-4">🍜</div>
+                    <h3 class="text-xl font-semibold mb-4 text-gitty-mint">Daily Grind</h3>
+                    <div class="text-3xl font-bold text-gitty-violet mb-2">~$0.0003</div>
+                    <div class="text-sm text-gray-600 dark:text-gray-400 mb-4">per commit</div>
+                    <p class="text-gray-600 dark:text-gray-300 mb-4">
+                        Fast & cheap with <code class="bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded">gpt-4o-mini</code>
+                    </p>
+                    <p class="text-sm text-gray-500">Perfect for "just ship it" energy</p>
+                </div>
+                
+                <div class="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-lg text-center border-2 border-gitty-violet">
+                    <div class="text-4xl mb-4">🚀</div>
+                    <h3 class="text-xl font-semibold mb-4 text-gitty-violet">Critical Stuff</h3>
+                    <div class="text-3xl font-bold text-gitty-violet mb-2">~$0.002</div>
+                    <div class="text-sm text-gray-600 dark:text-gray-400 mb-4">per commit</div>
+                    <p class="text-gray-600 dark:text-gray-300 mb-4">
+                        Pixel-perfect with <code class="bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded">gemini-1.5-pro</code>
+                    </p>
+                    <p class="text-sm text-gray-500">When you need that extra chef's kiss</p>
+                </div>
+                
+                <div class="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-lg text-center">
+                    <div class="text-4xl mb-4">🆓</div>
+                    <h3 class="text-xl font-semibold mb-4 text-gitty-pink">Budget Bestie</h3>
+                    <div class="text-3xl font-bold text-gitty-pink mb-2">FREE*</div>
+                    <div class="text-sm text-gray-600 dark:text-gray-400 mb-4">generous limits</div>
+                    <p class="text-gray-600 dark:text-gray-300 mb-4">
+                        No cost with <code class="bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded">gemini-1.5-flash</code>
+                    </p>
+                    <p class="text-sm text-gray-500">For the "I'm not paying for commits" crowd</p>
+                </div>
+            </div>
+            
+            <div class="text-center mt-12">
+                <p class="text-gray-600 dark:text-gray-400">
+                    * Within Google's generous free tier limits. You can switch models anytime with the <code>-m</code> flag!
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Documentation Link -->
+    <section id="docs" class="py-20 bg-gray-50 dark:bg-gray-900">
+        <div class="container mx-auto px-6 text-center">
+            <h2 class="font-display text-4xl md:text-5xl font-bold text-gitty-violet mb-6">
+                Need More Details?
+            </h2>
+            <p class="text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto">
+                Dive deep into all of Gitty's features, configuration options, and advanced usage patterns.
+            </p>
+            
+            <div class="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+                <a href="https://github.com/kljuicy/gitty#readme" target="_blank" class="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow group">
+                    <div class="text-gitty-violet text-4xl mb-4 group-hover:scale-110 transition-transform">
+                        <i class="fab fa-github"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-4">Full Documentation</h3>
+                    <p class="text-gray-600 dark:text-gray-300">
+                        Complete README with all CLI options, configuration examples, and troubleshooting guides.
+                    </p>
+                </a>
+                
+                <a href="https://gitlab.com/kljuicy/gitty/issues" target="_blank" class="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow group">
+                    <div class="text-gitty-pink text-4xl mb-4 group-hover:scale-110 transition-transform">
+                        <i class="fas fa-question-circle"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-4">Need Help?</h3>
+                    <p class="text-gray-600 dark:text-gray-300">
+                        Found a bug or have a feature request? We're here to help make your Git workflow even better!
+                    </p>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-12 bg-gitty-dark text-white">
+        <div class="container mx-auto px-6">
+            <div class="text-center">
+                <div class="flex justify-center items-center mb-4">
+                    <img src="assets/gitty-32x32.png" alt="Gitty" class="w-8 h-8 gitty-mascot">
+                    <div class="font-display text-2xl font-bold ml-[5px]">Gitty</div>
+                </div>
+                <p class="text-gray-400 mb-6">Cute commits. Clean history.</p>
+                
+                <div class="flex justify-center space-x-6 mb-8">
+                    <a href="https://gitlab.com/kljuicy/gitty" target="_blank" class="text-gray-400 hover:text-gitty-mint transition-colors">
+                        <i class="fab fa-gitlab text-2xl"></i>
+                    </a>
+                    <a href="https://github.com/kljuicy/gitty" target="_blank" class="text-gray-400 hover:text-gitty-mint transition-colors">
+                        <i class="fab fa-github text-2xl"></i>
+                    </a>
+                    <a href="https://www.npmjs.com/package/@kljuicy/gitty" target="_blank" class="text-gray-400 hover:text-gitty-mint transition-colors">
+                        <i class="fab fa-npm text-2xl"></i>
+                    </a>
+                </div>
+                
+                <p class="text-gray-500 text-sm">
+                    Vibecoded with ❤️ for devs who care about clean commit history
+                </p>
+                <p class="text-gray-500 text-sm mt-2">
+                    <i class="fas fa-balance-scale mr-1"></i> Open source & free to use under MIT
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="js/custom.js"></script>
+</body>
+</html> 

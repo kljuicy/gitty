@@ -1,0 +1,28 @@
+# Dependencies
+node_modules/
+pnpm-lock.yaml
+
+# Build outputs
+dist/
+*.tsbuildinfo
+
+# Coverage reports
+coverage/
+
+# Config files
+*.config.js
+*.config.ts
+
+# Logs
+*.log
+
+# Cache
+.cache/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db 

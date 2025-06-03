@@ -1,0 +1,410 @@
+# The Docker image that will be used to build your app
+image: node:22-alpine
+
+default:
+  before_script:
+    - apk add --no-cache git
+    - git config --global user.name "GitLab CI"
+    - git config --global user.email "ci@gitlab.com"
+    - corepack enable
+    - corepack prepare pnpm@latest --activate
+    - |
+      # Set up authenticated git remote if GITLAB_PUSH_TOKEN is available
+      if [ -n "$GITLAB_PUSH_TOKEN" ]; then
+        echo "🔑 Setting up authenticated git remote..."
+        git remote set-url origin "https://oauth2:${GITLAB_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+      fi
+
+# Define pipeline stages
+stages:
+  - install
+  - validate
+  - test
+  - build
+  - staging
+  - prepare
+  - release
+
+# Cache node_modules for faster builds
+cache:
+  paths:
+    - node_modules/
+
+# Install dependencies
+install_dependencies:
+  stage: install
+  script:
+    - pnpm install --frozen-lockfile
+  artifacts:
+    paths:
+      - node_modules/
+    expire_in: 1 hour
+
+# Check if changeset is present in MR
+changeset-check:
+  stage: validate
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+  dependencies:
+    - install_dependencies
+  variables:
+    GIT_BRANCH: 'develop'
+    GIT_DEPTH: 0 # Full git history for proper changeset checking
+  script:
+    - echo "🔍 Checking for changesets in MR..."
+    - |
+      # Since we have GIT_DEPTH: 0, no need for unshallow, but keeping the check for safety
+      if $(git rev-parse --is-shallow-repository); then 
+          echo "Running: fetch --unshallow origin $GIT_BRANCH"
+          git fetch --unshallow origin $GIT_BRANCH;
+      else
+          echo "Running: fetch origin $GIT_BRANCH"
+          git fetch origin $GIT_BRANCH;
+      fi
+    - echo "📋 Checking changeset status since origin/$GIT_BRANCH..."
+    - |
+      if pnpm changeset status --since=origin/$GIT_BRANCH --verbose; then
+        echo "✅ Changeset validation passed!"
+        echo "🎉 Great! This MR includes proper changelog entries."
+      else
+        echo "❌ No changeset found in this MR!"
+        echo ""
+        echo "🔧 To fix this, run: pnpm changeset"
+        echo ""
+        echo "📚 This ensures proper version management and changelog generation."
+        echo "💡 If this change doesn't need a release (docs, tests, etc.), you can add:"
+        echo "   a changeset with 'patch' level and note it's a non-breaking change."
+        exit 1
+      fi
+
+# Run type checking
+typecheck:
+  stage: test
+  dependencies:
+    - install_dependencies
+  script:
+    - pnpm run typecheck
+
+# Run ESLint for code quality
+lint:
+  stage: test
+  dependencies:
+    - install_dependencies
+  script:
+    - pnpm run lint
+
+# Check code formatting with Prettier
+format-check:
+  stage: test
+  dependencies:
+    - install_dependencies
+  script:
+    - pnpm run format:check
+
+# Run tests with coverage
+test:
+  stage: test
+  dependencies:
+    - install_dependencies
+  script:
+    - pnpm run test:ci --coverage
+  coverage: '/All files[^|]*\|[^0-9]*([0-9.]+)/'
+  artifacts:
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage/cobertura-coverage.xml
+    paths:
+      - coverage/
+    expire_in: 30 days
+
+# Run integration tests (config override system, CLI functionality)
+integration-test:
+  stage: build
+  needs:
+    - install_dependencies
+    - build
+  script: |
+    echo "🧪 Running integration tests (config override system)..."
+    echo "📦 Using pre-built artifacts from build job..."
+    cd $CI_PROJECT_DIR
+    pnpm run test:integration
+
+# Build the project
+build:
+  stage: build
+  dependencies:
+    - install_dependencies
+  script:
+    - pnpm run build
+  artifacts:
+    paths:
+      - dist/
+    expire_in: 1 week
+
+# Publish snapshot versions to GitLab Package Registry (develop branch only)
+publish-snapshot:
+  stage: staging
+  rules:
+    - if: $CI_COMMIT_BRANCH == "develop"
+  dependencies:
+    - install_dependencies
+    - build
+  script:
+    - |
+      echo "📦 Publishing snapshot version to GitLab Package Registry..."
+
+      # Check if there are any changesets
+      if [ ! -d ".changeset" ] || [ -z "$(find .changeset -name '*.md' -not -name 'README.md' 2>/dev/null)" ]; then
+        echo "❌ Error: No changesets found. Cannot prepare release without changesets."
+        exit 1
+      fi
+
+      # Create snapshot version
+      pnpm changeset version --snapshot develop
+
+      snapshot_version=$(node -p "require('./package.json').version")
+
+      # Create file with snapshot version
+      echo "$snapshot_version" > snapshot-version.txt
+
+      echo "📦 Snapshot version: v$snapshot_version"
+      echo ""
+
+      echo "🔑 Setting up GitLab registry authentication..."
+      # Create .npmrc with GitLab registry authentication
+      # Use explicit CI_SERVER_HOST to avoid port issues
+      echo "@kljuicy:registry=https://${CI_SERVER_HOST}/api/v4/projects/${CI_PROJECT_ID}/packages/npm/" > ~/.npmrc
+      echo "//${CI_SERVER_HOST}/api/v4/projects/${CI_PROJECT_ID}/packages/npm/:_authToken=${CI_JOB_TOKEN}" >> ~/.npmrc
+
+      echo "📤 Publishing snapshot to GitLab registry..."
+      pnpm publish --no-git-checks --tag develop
+
+      echo "✅ Snapshot v$snapshot_version published to GitLab Package Registry!"
+      echo ""
+      echo "📋 To install this snapshot version:"
+      echo "npm config set registry https://${CI_SERVER_HOST}/api/v4/projects/${CI_PROJECT_ID}/packages/npm/"
+      echo "npm config set //${CI_SERVER_HOST}/api/v4/projects/${CI_PROJECT_ID}/packages/npm/:_authToken=YOUR_GITLAB_TOKEN"
+      echo "npm install @kljuicy/gitty@$snapshot_version"
+  artifacts:
+    paths:
+      - snapshot-version.txt
+    expire_in: 1 hour
+
+# Test snapshot package from GitLab registry (develop branch only)
+test-snapshot:
+  stage: staging
+  rules:
+    - if: $CI_COMMIT_BRANCH == "develop"
+  needs:
+    - publish-snapshot
+  dependencies:
+    - publish-snapshot
+  script:
+    - |
+      echo "🧪 Testing snapshot package from GitLab registry..."
+
+      snapshot_version=$(cat snapshot-version.txt)
+
+      echo "📦 Testing snapshot version: v$snapshot_version"
+      echo ""
+
+      echo "🔑 Setting up GitLab registry for testing..."
+      # Configure registry for testing - use scoped registry like publish job
+      echo "@kljuicy:registry=https://${CI_SERVER_HOST}/api/v4/projects/${CI_PROJECT_ID}/packages/npm/" > ~/.npmrc
+      echo "//${CI_SERVER_HOST}/api/v4/projects/${CI_PROJECT_ID}/packages/npm/:_authToken=${CI_JOB_TOKEN}" >> ~/.npmrc
+
+      # Create test directory
+      mkdir -p /tmp/snapshot-test
+      cd /tmp/snapshot-test
+
+      echo "📥 Installing snapshot package from GitLab registry..."
+      npm install -g "@kljuicy/gitty@${snapshot_version}"
+      which gitty
+
+      echo "🧪 Testing CLI functionality..."
+      # Test the CLI directly from node_modules
+      gitty --version | grep "$snapshot_version"
+      gitty --help | grep "🐥 Gitty - Your cute lil AI-powered Git sidekick"
+
+      echo "✅ Snapshot package testing completed successfully!"
+
+# Prepare release with changesets (manual, develop only)
+prepare-release:
+  stage: prepare
+  rules:
+    - if: $CI_COMMIT_BRANCH == "develop"
+      when: manual
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "develop"
+      when: manual
+  dependencies:
+    - install_dependencies
+    - build
+  script:
+    - |
+      echo "🔄 Preparing release from develop branch..."
+
+      # First, ensure we're on the develop branch
+      echo "🔄 Checking out develop branch..."
+      git fetch origin develop
+      git checkout develop
+      git pull origin develop
+
+      # Check if there are any changesets
+      if [ ! -d ".changeset" ] || [ -z "$(find .changeset -name '*.md' -not -name 'README.md' 2>/dev/null)" ]; then
+        echo "❌ Error: No changesets found. Cannot prepare release without changesets."
+        exit 1
+      fi
+
+      echo "📦 Found changesets:"
+      find .changeset -name '*.md' -not -name 'README.md' -exec basename {} \;
+      echo ""
+
+      echo "🔄 Updating versions and changelog..."
+      pnpm changeset version
+
+      # Get the new version
+      new_version=$(node -p "require('./package.json').version")
+      echo "📈 New version: v$new_version"
+
+      echo "🔄 Committing release..."
+      git add .
+      git commit -m "release: v$new_version"
+      git push origin develop
+
+      echo "📋 Release v$new_version prepared on develop branch."
+      echo "🚀 Next step: Create MR from develop → main manually"
+
+# Publish to GitLab package registry for staging (main branch only)
+publish-gitlab:
+  stage: staging
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+  dependencies:
+    - build
+  script:
+    - |
+      echo "📦 Publishing to GitLab Package Registry (staging)..."
+      version=$(node -p "require('./package.json').version")
+      echo "📦 Current version: v$version"
+      echo ""
+
+      echo "🔑 Setting up GitLab registry authentication..."
+      # Create .npmrc with GitLab registry authentication - use scoped registry
+      echo "@kljuicy:registry=https://${CI_SERVER_HOST}/api/v4/projects/${CI_PROJECT_ID}/packages/npm/" > ~/.npmrc
+      echo "//${CI_SERVER_HOST}/api/v4/projects/${CI_PROJECT_ID}/packages/npm/:_authToken=${CI_JOB_TOKEN}" >> ~/.npmrc
+
+      echo "📤 Publishing to GitLab registry..."
+      pnpm publish --no-git-checks --tag latest
+
+      echo "✅ Published to GitLab Package Registry successfully!"
+
+# Test the published package from GitLab registry (main branch only)
+test-package:
+  stage: staging
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+  needs:
+    - publish-gitlab
+  script:
+    - |
+      echo "🧪 Testing published package from GitLab registry..."
+      version=$(node -p "require('./package.json').version")
+      echo "📦 Testing version: v$version"
+      echo ""
+
+      echo "🔑 Setting up GitLab registry for testing..."
+      # Configure registry for testing - use scoped registry like publish job
+      echo "@kljuicy:registry=https://${CI_SERVER_HOST}/api/v4/projects/${CI_PROJECT_ID}/packages/npm/" > ~/.npmrc
+      echo "//${CI_SERVER_HOST}/api/v4/projects/${CI_PROJECT_ID}/packages/npm/:_authToken=${CI_JOB_TOKEN}" >> ~/.npmrc
+
+      # Create test directory
+      mkdir -p /tmp/package-test
+      cd /tmp/package-test
+
+      echo "📥 Installing package from GitLab registry..."
+      npm install -g "@kljuicy/gitty@${version}"
+
+      echo "🧪 Testing CLI functionality..."
+      # Test the CLI directly from node_modules
+      gitty --version | grep "$version"
+      gitty --help | grep "🐥 Gitty - Your cute lil AI-powered Git sidekick"
+
+      echo "✅ Package testing completed successfully!"
+      echo "🎯 Package is ready for npm publishing!"
+
+pages:
+  stage: release
+  pages:
+    publish: public
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+  script:
+    - |
+      echo "🌐 Deploying GitLab Pages site..."
+      echo " Site ready for deployment"
+
+# Manual publishing step to npm (only on main branch)
+publish:
+  stage: release
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+      when: manual
+  dependencies:
+    - test-package
+  script:
+    - |
+      echo "🚀 Publishing Gitty Committy to npm..."
+      version=$(node -p "require('./package.json').version")
+      echo "📦 Current version: v$version"
+      echo ""
+
+      echo "🔍 Checking if we're ready to publish..."
+      # Check if there are any uncommitted changes
+      if ! git diff-index --quiet HEAD --; then
+        echo "❌ Error: Uncommitted changes detected. This should not happen on main."
+        exit 1
+      fi
+
+      # Check if NPM_TOKEN is set
+      if [ -z "$NPM_TOKEN" ]; then
+        echo "❌ Error: NPM_TOKEN environment variable is not set."
+        echo "Please set NPM_TOKEN in GitLab CI/CD variables."
+        exit 1
+      fi
+
+      echo "🔑 Setting up npm authentication..."
+      # Create .npmrc with authentication
+      echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/.npmrc
+      echo "registry=https://registry.npmjs.org/" >> ~/.npmrc
+
+      echo "📤 Publishing to npm..."
+      pnpm publish --access public --no-git-checks
+
+      echo "🏷️ Creating git tag v$version..."
+      git tag "v$version"
+      git push origin "v$version"
+
+      echo "✅ Publishing completed successfully!"
+      echo ""
+      echo "📋 Next steps:"
+      echo "1. Go to GitLab: https://gitlab.com/thisjuiCyTV/gitty/-/releases"
+      echo "2. Click 'New release'"
+      echo "3. Select tag: v$version"
+      echo "4. Copy changelog content from CHANGELOG.md"
+      echo "5. Publish the release"
+      echo ""
+      echo "🎉 Version v$version is now live on npm!"
+  environment:
+    name: production
+    url: https://www.npmjs.com/package/@kljuicy/gitty
+
+# Rules for when to run the pipeline
+workflow:
+  rules:
+    - if: $CI_COMMIT_BRANCH == "develop" && $CI_COMMIT_MESSAGE =~ /^release:/
+      when: never
+    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_BRANCH == "develop"
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_TAG
