@@ -361,14 +361,25 @@ mirror-github:
         exit 1
       fi
 
+      echo "🔍 Current git state:"
+      git branch -a
+      git status
+
+      echo "🔄 Fetching all branches..."
+      git fetch origin --all
+
+      echo "🔄 Setting up local branch ${CI_COMMIT_BRANCH}..."
+      # Create local branch tracking the remote branch
+      git checkout -B ${CI_COMMIT_BRANCH} origin/${CI_COMMIT_BRANCH}
+
       echo "🔑 Setting up GitHub authentication..."
-      git remote add github "https://oauth2:${GITHUB_TOKEN}@github.com/kljuicy/gitty.git"
+      git remote add github "https://oauth2:${GITHUB_TOKEN}@github.com/kljuicy/gitty.git" || git remote set-url github "https://oauth2:${GITHUB_TOKEN}@github.com/kljuicy/gitty.git"
 
       echo "📤 Pushing ${CI_COMMIT_BRANCH} to GitHub..."
       git push github ${CI_COMMIT_BRANCH}
 
       echo "🏷️ Pushing tags to GitHub..."
-      git push github --tags
+      git push github --tags || echo "No tags to push"
 
       echo "✅ Successfully mirrored to GitHub!"
       echo "🔗 GitHub repo: https://github.com/kljuicy/gitty"
