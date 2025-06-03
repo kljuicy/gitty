@@ -24,12 +24,21 @@ stages:
   - staging
   - prepare
   - release
-  - mirror
 
 # Cache node_modules for faster builds
 cache:
   paths:
     - node_modules/
+
+# Rules for when to run the pipeline
+workflow:
+  rules:
+    - if: $CI_COMMIT_BRANCH == "develop" && $CI_COMMIT_MESSAGE =~ /^release:/
+      when: never
+    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_BRANCH == "develop"
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_TAG
 
 # Install dependencies
 install_dependencies:
@@ -343,6 +352,39 @@ pages:
       echo "🌐 Deploying GitLab Pages site..."
       echo " Site ready for deployment"
 
+# Mirror to GitHub (main and develop branches)
+mirror-github:
+  stage: staging
+  needs:
+    - test-package
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_BRANCH == "develop"
+  variables:
+    GIT_DEPTH: 0 # Full git history for mirroring
+  script:
+    - |
+      echo "🔄 Mirroring to GitHub..."
+
+      # Check if GITHUB_TOKEN is set
+      if [ -z "$GITHUB_TOKEN" ]; then
+        echo "❌ Error: GITHUB_TOKEN environment variable is not set."
+        echo "Please set GITHUB_TOKEN in GitLab CI/CD variables."
+        exit 1
+      fi
+
+      echo "🔑 Setting up GitHub authentication..."
+      git remote add github "https://oauth2:${GITHUB_TOKEN}@github.com/kljuicy/gitty.git"
+
+      echo "📤 Pushing ${CI_COMMIT_BRANCH} to GitHub..."
+      git push github ${CI_COMMIT_BRANCH}
+
+      echo "🏷️ Pushing tags to GitHub..."
+      git push github --tags
+
+      echo "✅ Successfully mirrored to GitHub!"
+      echo "🔗 GitHub repo: https://github.com/kljuicy/gitty"
+
 # Manual publishing step to npm (only on main branch)
 publish:
   stage: release
@@ -397,44 +439,3 @@ publish:
   environment:
     name: production
     url: https://www.npmjs.com/package/@kljuicy/gitty
-
-# Mirror to GitHub (main and develop branches)
-mirror-github:
-  stage: mirror
-  rules:
-    - if: $CI_COMMIT_BRANCH == "main"
-    - if: $CI_COMMIT_BRANCH == "develop"
-  variables:
-    GIT_DEPTH: 0 # Full git history for mirroring
-  script:
-    - |
-      echo "🔄 Mirroring to GitHub..."
-
-      # Check if GITHUB_TOKEN is set
-      if [ -z "$GITHUB_TOKEN" ]; then
-        echo "❌ Error: GITHUB_TOKEN environment variable is not set."
-        echo "Please set GITHUB_TOKEN in GitLab CI/CD variables."
-        exit 1
-      fi
-
-      echo "🔑 Setting up GitHub authentication..."
-      git remote add github "https://oauth2:${GITHUB_TOKEN}@github.com/kljuicy/gitty.git"
-
-      echo "📤 Pushing ${CI_COMMIT_BRANCH} to GitHub..."
-      git push github ${CI_COMMIT_BRANCH}
-
-      echo "🏷️ Pushing tags to GitHub..."
-      git push github --tags
-
-      echo "✅ Successfully mirrored to GitHub!"
-      echo "🔗 GitHub repo: https://github.com/kljuicy/gitty"
-
-# Rules for when to run the pipeline
-workflow:
-  rules:
-    - if: $CI_COMMIT_BRANCH == "develop" && $CI_COMMIT_MESSAGE =~ /^release:/
-      when: never
-    - if: $CI_COMMIT_BRANCH == "main"
-    - if: $CI_COMMIT_BRANCH == "develop"
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_COMMIT_TAG
