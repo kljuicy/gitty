@@ -365,8 +365,8 @@ mirror-github:
       git branch -a
       git status
 
-      echo "🔄 Fetching all branches..."
-      git fetch origin --all
+      echo "🔄 Fetching all branches from origin..."
+      git fetch origin
 
       echo "🔄 Setting up local branch ${CI_COMMIT_BRANCH}..."
       # Create local branch tracking the remote branch
