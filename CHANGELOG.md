@@ -1,5 +1,11 @@
 # @kljuicy/gitty
 
+## 1.0.2
+
+### Patch Changes
+
+- a864bd81b25836e64607899c852bb48d853e9231 - GITTY#9: Updated node dependencies (#9)
+
 ## 1.0.1
 
 ### Patch Changes
@@ -14,7 +20,6 @@
   Your cute lil AI-powered Git sidekick is here!
 
   ## Features
-
   - 🤖 **AI-powered commit messages** using OpenAI GPT models
   - 🎯 **Smart suggestions** with confidence scores
   - 🎨 **Multiple styles**: concise, detailed, or funny
@@ -41,7 +46,6 @@
 - !6 - GITTY-003 ci: restructure pipeline stages and add release preparation (#1 #2 #4)
 - !6 - 🚀 Major UX & Testing Infrastructure Overhaul (#1 #2 #4)  
   **🧪 Test Suite Transformation:**
-
   - Expanded from basic tests to comprehensive 107-test suite (100% passing)
   - Added extensive CLI validation testing with smart error suggestions
   - Implemented interactive flows testing with SIGINT handling
@@ -49,7 +53,6 @@
   - Added menu system and user flow validation
 
   **✨ CLI Validation & UX Improvements:**
-
   - Smart parameter validation with educational error messages
   - Intelligent typo suggestions (gpt→openai, google→gemini, brief→concise)
   - Early validation prevents expensive API calls on user mistakes
@@ -58,21 +61,18 @@
   - Max tokens validation with reasonable limits
 
   **🛡️ Enhanced Error Handling:**
-
   - Context-aware error recovery messages
   - Graceful SIGINT handling across all interactive flows
   - Improved git integration error scenarios
   - Better API error handling with user guidance
 
   **📊 CI/CD & Coverage Integration:**
-
   - Added comprehensive coverage collection to GitLab pipeline
   - Integrated Cobertura coverage reports for badge automation
   - Fixed coverage regex pattern for accurate percentage extraction
   - 30-day coverage artifact retention with HTML reports
 
   **🧹 Technical Cleanup:**
-
   - Eliminated code duplication and improved maintainability
   - Improved UI organization with better separation of concerns
   - Backward-compatible refactoring for modern development patterns
