@@ -56,33 +56,41 @@
   "packageManager": "pnpm@10.6.1",
   "dependencies": {
     "@google/generative-ai": "^0.21.0",
-    "chalk": "^5.4.1",
+    "chalk": "^5.5.0",
     "commander": "^14.0.0",
     "conf": "^13.1.0",
-    "inquirer": "^12.6.3",
-    "openai": "^4.103.0",
+    "inquirer": "^12.9.0",
+    "openai": "^4.104.0",
     "ora": "^8.2.0",
-    "simple-git": "^3.27.0",
-    "zod": "^3.25.36"
+    "simple-git": "^3.28.0",
+    "zod": "^3.25.76"
   },
   "devDependencies": {
-    "@changesets/cli": "^2.29.4",
-    "@eslint/js": "^9.28.0",
-    "@types/inquirer": "^9.0.8",
+    "@changesets/cli": "^2.29.5",
+    "@eslint/js": "^9.32.0",
+    "@types/inquirer": "^9.0.9",
     "@types/mock-fs": "^4.13.4",
-    "@types/node": "^22.15.24",
-    "@typescript-eslint/eslint-plugin": "^8.33.0",
-    "@typescript-eslint/parser": "^8.33.0",
+    "@types/node": "^22.17.1",
+    "@typescript-eslint/eslint-plugin": "^8.39.0",
+    "@typescript-eslint/parser": "^8.39.0",
     "@vitest/coverage-v8": "3.1.4",
-    "@vitest/ui": "^3.1.4",
+    "@vitest/ui": "^3.2.4",
     "changelog-gitlab": "^0.4.0",
-    "eslint": "^9.28.0",
+    "eslint": "^9.32.0",
     "http-server": "^14.1.1",
     "mock-fs": "^5.5.0",
-    "prettier": "^3.5.3",
+    "prettier": "^3.6.2",
     "tsup": "^8.5.0",
-    "tsx": "^4.19.4",
-    "typescript": "^5.8.3",
-    "vitest": "^3.1.4"
+    "tsx": "^4.20.3",
+    "typescript": "^5.9.2",
+    "vitest": "^3.2.4"
+  },
+  "pnpm": {
+    "ignoredBuiltDependencies": [
+      "esbuild"
+    ],
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
   }
 }

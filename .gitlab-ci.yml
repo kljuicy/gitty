@@ -375,6 +375,9 @@ mirror-github:
       echo "🔑 Setting up GitHub authentication..."
       git remote add github "https://oauth2:${GITHUB_TOKEN}@github.com/kljuicy/gitty.git" || git remote set-url github "https://oauth2:${GITHUB_TOKEN}@github.com/kljuicy/gitty.git"
 
+      echo "Pulling latest changes from github..."
+      git pull github ${CI_COMMIT_BRANCH}
+
       echo "📤 Pushing ${CI_COMMIT_BRANCH} to GitHub..."
       git push github ${CI_COMMIT_BRANCH}
 
