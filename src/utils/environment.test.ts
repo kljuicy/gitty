@@ -15,7 +15,7 @@ describe('Environment Detection Utilities', () => {
   afterEach(() => {
     // Restore original values
     process.stdout.isTTY = originalStdoutIsTTY;
-    
+
     // Properly restore environment variables
     // Delete all test-related env vars first
     const testEnvVars = [
@@ -32,7 +32,7 @@ describe('Environment Detection Utilities', () => {
       'CIRCLECI',
       'TRAVIS',
     ];
-    
+
     testEnvVars.forEach(envVar => {
       if (originalEnv[envVar] !== undefined) {
         process.env[envVar] = originalEnv[envVar];

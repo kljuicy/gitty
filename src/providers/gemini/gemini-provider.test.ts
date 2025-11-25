@@ -135,7 +135,9 @@ describe('Gemini Provider', () => {
         expect.stringContaining('Based on this git diff'), // user prompt
         expect.objectContaining({
           model: mockOptions.model,
-          systemPrompt: expect.stringContaining('clear, concise commit messages'),
+          systemPrompt: expect.stringContaining(
+            'clear, concise commit messages'
+          ),
           temperature: mockOptions.temperature,
           maxTokens: mockOptions.maxTokens,
         })
@@ -266,7 +268,9 @@ describe('Gemini Provider', () => {
         expect.stringContaining('Based on this git diff'), // user prompt
         expect.objectContaining({
           model: mockOptions.model,
-          systemPrompt: expect.stringContaining('clear, concise commit messages'),
+          systemPrompt: expect.stringContaining(
+            'clear, concise commit messages'
+          ),
           temperature: mockOptions.temperature,
           maxTokens: mockOptions.maxTokens,
         })
