@@ -15,7 +15,31 @@ describe('Environment Detection Utilities', () => {
   afterEach(() => {
     // Restore original values
     process.stdout.isTTY = originalStdoutIsTTY;
-    process.env = originalEnv;
+    
+    // Properly restore environment variables
+    // Delete all test-related env vars first
+    const testEnvVars = [
+      'NODE_ENV',
+      'CI',
+      'FORCE_COLOR',
+      'NO_COLOR',
+      'NODE_DISABLE_COLORS',
+      'CONTINUOUS_INTEGRATION',
+      'GITHUB_ACTIONS',
+      'GITLAB_CI',
+      'JENKINS_URL',
+      'BUILDKITE',
+      'CIRCLECI',
+      'TRAVIS',
+    ];
+    
+    testEnvVars.forEach(envVar => {
+      if (originalEnv[envVar] !== undefined) {
+        process.env[envVar] = originalEnv[envVar];
+      } else {
+        delete process.env[envVar];
+      }
+    });
   });
 
   describe('isInteractiveEnvironment', () => {
@@ -154,6 +178,15 @@ describe('Environment Detection Utilities', () => {
       process.stdout.isTTY = true;
       delete process.env.NODE_ENV;
       delete process.env.CI;
+      delete process.env.FORCE_COLOR;
+      delete process.env.NODE_DISABLE_COLORS;
+      delete process.env.CONTINUOUS_INTEGRATION;
+      delete process.env.GITHUB_ACTIONS;
+      delete process.env.GITLAB_CI;
+      delete process.env.JENKINS_URL;
+      delete process.env.BUILDKITE;
+      delete process.env.CIRCLECI;
+      delete process.env.TRAVIS;
       process.env.NO_COLOR = '1';
 
       expect(shouldShowColors()).toBe(false);
@@ -163,6 +196,15 @@ describe('Environment Detection Utilities', () => {
       process.stdout.isTTY = true;
       delete process.env.NODE_ENV;
       delete process.env.CI;
+      delete process.env.FORCE_COLOR;
+      delete process.env.NO_COLOR;
+      delete process.env.CONTINUOUS_INTEGRATION;
+      delete process.env.GITHUB_ACTIONS;
+      delete process.env.GITLAB_CI;
+      delete process.env.JENKINS_URL;
+      delete process.env.BUILDKITE;
+      delete process.env.CIRCLECI;
+      delete process.env.TRAVIS;
       process.env.NODE_DISABLE_COLORS = '1';
 
       expect(shouldShowColors()).toBe(false);

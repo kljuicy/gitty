@@ -48,30 +48,28 @@ export const createOpenAIClientErrorMock = (): any => ({
 
 /**
  * Gemini client mock for dependency injection - prevents real API calls
+ * Updated for @google/genai package (uses models.generateContent instead of getGenerativeModel)
  */
 export const createGeminiClientMock = (): any => ({
-  getGenerativeModel: vi.fn().mockReturnValue({
+  models: {
     generateContent: vi.fn().mockResolvedValue({
-      response: {
-        text: vi.fn().mockReturnValue(
-          JSON.stringify([
-            { message: 'feat: implement new feature', confidence: 0.9 },
-            { message: 'update: enhance performance', confidence: 0.8 },
-            { message: 'fix: resolve issue', confidence: 0.7 },
-          ])
-        ),
-      },
+      text: JSON.stringify([
+        { message: 'feat: implement new feature', confidence: 0.9 },
+        { message: 'update: enhance performance', confidence: 0.8 },
+        { message: 'fix: resolve issue', confidence: 0.7 },
+      ]),
     }),
-  }),
+  },
 });
 
 /**
  * Gemini client mock that throws errors for testing error paths
+ * Updated for @google/genai package
  */
 export const createGeminiClientErrorMock = (): any => ({
-  getGenerativeModel: vi.fn().mockReturnValue({
+  models: {
     generateContent: vi.fn().mockRejectedValue(new Error('API Error')),
-  }),
+  },
 });
 
 /**

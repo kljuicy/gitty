@@ -9,7 +9,7 @@ export const OpenAIConfigSchema = z.object({
 
 export const GeminiConfigSchema = z.object({
   apiKey: z.string().default(''),
-  model: z.string().default('gemini-1.5-flash'),
+  model: z.string().default('gemini-2.5-flash'),
   temperature: z.number().min(0).max(2).default(0.7),
   maxTokens: z.number().min(1).max(8192).default(2048),
 });

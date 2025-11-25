@@ -12,7 +12,7 @@ export const PROVIDER_CONFIGS: Record<string, ProviderConfig> = {
 
   gemini: {
     name: 'Gemini',
-    defaultModel: 'gemini-1.5-flash',
+    defaultModel: 'gemini-2.5-flash',
     maxDiffLength: 6000,
   },
 } as const;

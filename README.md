@@ -14,8 +14,8 @@
 
 **🤖 Choose Your AI Vibe:**
 
-- **OpenAI** (GPT-4, GPT-4o, GPT-3.5-turbo)
-- **Google Gemini** (Gemini 1.5 Flash, Gemini 1.5 Pro)
+- **OpenAI** (GPT-4o-mini, GPT-4o, GPT-3.5-turbo)
+- **Google Gemini** (Gemini 2.5 Flash, Gemini 1.5 Flash, Gemini 1.5 Pro, Gemini 3.0 Pro)
 
 ## ✨ Why Gitty?
 
@@ -138,8 +138,8 @@ gitty --set-provider  # Choose your vibe
 | Vibe Check        | AI Bestie                    | Why Though?                                    |
 | ----------------- | ---------------------------- | ---------------------------------------------- |
 | 💼 Daily Grind    | `gpt-4o-mini`                | Fast & cheap, like your favorite instant ramen |
-| 🚨 Critical Stuff | `gpt-4o` or `gemini-1.5-pro` | When you need that pixel-perfect commit        |
-| 🆓 Free Spirit    | `gemini-1.5-flash`           | No cost, just vibes                            |
+| 🚨 Critical Stuff | `gpt-4o` or `gemini-3.0-pro` | When you need that pixel-perfect commit        |
+| 🆓 Free Spirit    | `gemini-2.5-flash`           | No cost, just vibes (default for Gemini)       |
 
 ### 💸 The Money Talk
 
@@ -169,13 +169,21 @@ When you need that extra _chef's kiss_
 - Output: $5.00 per 1M tokens
 - Per Commit\*: ~$0.002
 
-#### 🆓 Budget Bestie (gemini-1.5-flash)
+**Gemini 3.0 Pro** (Latest & Most Powerful)
+
+- Input: $2.00-$4.00 per 1M tokens
+- Output: $12.00-$18.00 per 1M tokens
+- Per Commit\*: ~$0.004-$0.009
+- ⚠️ More expensive, but most capable
+
+#### 🆓 Budget Bestie (gemini-2.5-flash) (Default for Gemini)
 
 For the "I'm not paying for commits" crowd
 
 - Input: $0.075 per 1M tokens
 - Output: $0.30 per 1M tokens
 - Per Commit\*: ~$0.0001 (basically free)
+- ✅ Latest stable Flash model - fast & affordable
 
 \*_Based on average diff of 1000 tokens + 500 token response_
 
@@ -199,8 +207,11 @@ gitty -m gpt-4o-mini
 # That big refactor you're proud of
 gitty -m gpt-4o
 
-# When the budget is tight
-gitty -m gemini-1.5-flash --provider gemini
+# Latest & greatest (but more expensive)
+gitty -m gemini-3.0-pro --provider gemini
+
+# When the budget is tight (default for Gemini)
+gitty -m gemini-2.5-flash --provider gemini
 ```
 
 ## 🚀 Getting Started
@@ -259,7 +270,7 @@ Gitty uses a layered configuration system:
     },
     "gemini": {
       "apiKey": "personal-gemini-key",
-      "model": "gemini-1.5-flash",
+      "model": "gemini-2.5-flash",
       "temperature": 0.7,
       "maxTokens": 2048
     }
@@ -284,7 +295,7 @@ Gitty uses a layered configuration system:
         "gemini": {
           "apiKey": "work-gemini-key",
           "temperature": 0.5,
-          "model": "gemini-1.5-pro"
+          "model": "gemini-2.5-flash"
         }
       }
     }
@@ -393,13 +404,15 @@ gitty -P work -p "HOTFIX-" -f
 
 # Feeling fancy? Try different models
 gitty -m gpt-4o-mini -t 0.3
-gitty -m gemini-1.5-pro --provider gemini
+gitty -m gemini-3.0-pro --provider gemini  # Latest & powerful
+gitty -m gemini-1.5-pro --provider gemini  # Good balance
+gitty -m gemini-2.5-flash --provider gemini # Budget-friendly (default)
 
 # Mamma mia! Generate in Italian 🤌
 gitty -l it
 
 # Mix and match like a pro
-gitty --provider gemini -m gemini-1.5-flash
+gitty --provider gemini -m gemini-2.5-flash
 gitty --provider openai -m gpt-4o
 ```
 
@@ -473,7 +486,7 @@ gitty                                      # Generate commit with defaults
 gitty -P work                              # Use work preset
 gitty -p "PROJ-123"                        # Add prefix (appends to preset)
 gitty -p "HOTFIX-" -f                      # Force replace entire prepend
-gitty --provider gemini -m gemini-1.5-pro # Override provider & model
+gitty --provider gemini -m gemini-3.0-pro # Override provider & model (latest)
 gitty -l it -s detailed                   # Italian detailed commits
 gitty -t 0.3 --max-tokens 200              # Lower creativity, shorter messages
 
@@ -484,8 +497,8 @@ gitty -P work -p "123" -v                  # Preview with work preset + ticket
 
 **Provider-specific models:**
 
-- **OpenAI**: `gpt-4o`, `gpt-4o-mini`, `gpt-3.5-turbo`
-- **Gemini**: `gemini-1.5-flash`, `gemini-1.5-pro`
+- **OpenAI**: `gpt-4o-mini` (default), `gpt-4o`, `gpt-3.5-turbo`
+- **Gemini**: `gemini-2.5-flash` (default), `gemini-1.5-flash`, `gemini-1.5-pro`, `gemini-3.0-pro`
 
 ## 🧸 User Experience
 

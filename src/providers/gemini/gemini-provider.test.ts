@@ -26,7 +26,7 @@ describe('Gemini Provider', () => {
   describe('Provider Configuration', () => {
     it('should have correct config', () => {
       expect(geminiProvider.config.name).toBe('Gemini');
-      expect(geminiProvider.config.defaultModel).toBe('gemini-1.5-flash');
+      expect(geminiProvider.config.defaultModel).toBe('gemini-2.5-flash');
       expect(geminiProvider.config.maxDiffLength).toBe(6000);
     });
   });
@@ -118,7 +118,7 @@ describe('Gemini Provider', () => {
       ).rejects.toThrow('Failed to generate commit messages after 3 attempts');
     });
 
-    it('should combine system and user prompts correctly', async () => {
+    it('should pass system and user prompts separately', async () => {
       const mockClient = {
         generateContent: vi
           .fn()
@@ -130,11 +130,12 @@ describe('Gemini Provider', () => {
 
       await geminiProvider.generateCommitMessages(mockOptions, mockClient);
 
-      // Verify the prompt combination business logic
+      // Verify systemPrompt is passed in options (used as systemInstruction in config)
       expect(mockClient.generateContent).toHaveBeenCalledWith(
-        expect.stringContaining('clear, concise commit messages'), // system prompt part
+        expect.stringContaining('Based on this git diff'), // user prompt
         expect.objectContaining({
           model: mockOptions.model,
+          systemPrompt: expect.stringContaining('clear, concise commit messages'),
           temperature: mockOptions.temperature,
           maxTokens: mockOptions.maxTokens,
         })
@@ -248,7 +249,7 @@ describe('Gemini Provider', () => {
       ).rejects.toThrow('Failed to generate commit messages after 3 attempts');
     });
 
-    it('should combine system and user prompts correctly', async () => {
+    it('should pass system and user prompts separately', async () => {
       const mockClient = {
         generateContent: vi
           .fn()
@@ -260,11 +261,12 @@ describe('Gemini Provider', () => {
 
       await geminiProvider.generateCommitMessages(mockOptions, mockClient);
 
-      // Verify the prompt combination business logic
+      // Verify systemPrompt is passed in options (used as systemInstruction in config)
       expect(mockClient.generateContent).toHaveBeenCalledWith(
-        expect.stringContaining('clear, concise commit messages'), // system prompt part
+        expect.stringContaining('Based on this git diff'), // user prompt
         expect.objectContaining({
           model: mockOptions.model,
+          systemPrompt: expect.stringContaining('clear, concise commit messages'),
           temperature: mockOptions.temperature,
           maxTokens: mockOptions.maxTokens,
         })
@@ -284,10 +286,10 @@ describe('Gemini Provider', () => {
           },
           async validateKey(): Promise<boolean> {
             try {
-              const genModel = mockGoogleAI.getGenerativeModel({
-                model: 'gemini-1.5-flash',
+              await mockGoogleAI.models.generateContent({
+                model: 'gemini-2.5-flash',
+                contents: 'Hello',
               });
-              await genModel.generateContent('Hello');
               return true;
             } catch {
               return false;
@@ -299,8 +301,9 @@ describe('Gemini Provider', () => {
       const client = createGeminiClientAdapter('test-key');
       const result = await client.validateKey();
       expect(result).toBe(true);
-      expect(mockGoogleAI.getGenerativeModel).toHaveBeenCalledWith({
-        model: 'gemini-1.5-flash',
+      expect(mockGoogleAI.models.generateContent).toHaveBeenCalledWith({
+        model: 'gemini-2.5-flash',
+        contents: 'Hello',
       });
     });
 
@@ -314,10 +317,10 @@ describe('Gemini Provider', () => {
           },
           async validateKey(): Promise<boolean> {
             try {
-              const genModel = mockGoogleAI.getGenerativeModel({
-                model: 'gemini-1.5-flash',
+              await mockGoogleAI.models.generateContent({
+                model: 'gemini-2.5-flash',
+                contents: 'Hello',
               });
-              await genModel.generateContent('Hello');
               return true;
             } catch {
               return false;
@@ -329,7 +332,7 @@ describe('Gemini Provider', () => {
       const client = createGeminiClientAdapter('invalid-key');
       const result = await client.validateKey();
       expect(result).toBe(false);
-      expect(mockGoogleAI.getGenerativeModel).toHaveBeenCalled();
+      expect(mockGoogleAI.models.generateContent).toHaveBeenCalled();
     });
   });
 });

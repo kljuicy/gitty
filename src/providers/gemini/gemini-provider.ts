@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GoogleGenAI } from '@google/genai';
 import { createProvider, type AIClient } from '../utils/provider-factory';
 import { getProviderConfig } from '../utils/provider-configs';
 
@@ -6,29 +6,29 @@ import { getProviderConfig } from '../utils/provider-configs';
  * Functional Gemini client adapter - no classes!
  */
 const createGeminiClientAdapter = (apiKey: string): AIClient => {
-  const client = new GoogleGenerativeAI(apiKey);
+  const client = new GoogleGenAI({ apiKey });
 
   return {
     async generateContent(prompt: string, options: any): Promise<any> {
-      const genModel = client.getGenerativeModel({
-        model: options.model || 'gemini-1.5-flash',
-        generationConfig: {
+      const response = await client.models.generateContent({
+        model: options.model || 'gemini-2.5-flash',
+        contents: prompt,
+        config: {
+          systemInstruction: options.systemPrompt,
           temperature: options.temperature,
           maxOutputTokens: options.maxTokens,
         },
       });
 
-      const result = await genModel.generateContent(prompt);
-      const response = await result.response;
-      return response.text();
+      return response.text || '';
     },
 
     async validateKey(): Promise<boolean> {
       try {
-        const genModel = client.getGenerativeModel({
-          model: 'gemini-1.5-flash',
+        await client.models.generateContent({
+          model: 'gemini-2.5-flash',
+          contents: 'Hello',
         });
-        await genModel.generateContent('Hello');
         return true;
       } catch {
         return false;
@@ -48,9 +48,9 @@ export const geminiProvider = createProvider(
 
   // Generate content function
   async (client, options, systemPrompt, userPrompt) => {
-    const combinedPrompt = `${systemPrompt}\n\n${userPrompt}`;
-    return await client.generateContent(combinedPrompt, {
+    return await client.generateContent(userPrompt, {
       model: options.model,
+      systemPrompt,
       temperature: options.temperature,
       maxTokens: options.maxTokens,
     });

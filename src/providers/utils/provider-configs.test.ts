@@ -19,7 +19,7 @@ describe('Provider Configurations', () => {
     it('should have Gemini configuration', () => {
       expect(PROVIDER_CONFIGS.gemini).toBeDefined();
       expect(PROVIDER_CONFIGS.gemini.name).toBe('Gemini');
-      expect(PROVIDER_CONFIGS.gemini.defaultModel).toBe('gemini-1.5-flash');
+      expect(PROVIDER_CONFIGS.gemini.defaultModel).toBe('gemini-2.5-flash');
       expect(PROVIDER_CONFIGS.gemini.maxDiffLength).toBe(6000);
     });
 
