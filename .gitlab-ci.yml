@@ -167,6 +167,12 @@ publish-snapshot:
       # Check if there are any changesets
       if [ ! -d ".changeset" ] || [ -z "$(find .changeset -name '*.md' -not -name 'README.md' 2>/dev/null)" ]; then
         echo "❌ Error: No changesets found. Cannot prepare release without changesets."
+        echo ""
+        echo "🔧 To fix this, run: pnpm changeset"
+        echo ""
+        echo "📚 This ensures proper version management and changelog generation."
+        echo "💡 If this change doesn't need a release (docs, tests, etc.), you can add:"
+        echo "   a changeset with 'patch' level and note it's a non-breaking change."
         exit 1
       fi
 
@@ -202,6 +208,7 @@ publish-snapshot:
     expire_in: 1 hour
 
 # Test snapshot package from GitLab registry (develop branch only)
+# Note: This job will be automatically skipped if publish-snapshot fails (e.g., no changesets)
 test-snapshot:
   stage: staging
   rules:
@@ -373,13 +380,14 @@ mirror-github:
       git checkout -B ${CI_COMMIT_BRANCH} origin/${CI_COMMIT_BRANCH}
 
       echo "🔑 Setting up GitHub authentication..."
-      git remote add github "https://oauth2:${GITHUB_TOKEN}@github.com/kljuicy/gitty.git" || git remote set-url github "https://oauth2:${GITHUB_TOKEN}@github.com/kljuicy/gitty.git"
+      # Use 'git' as username with PAT token (GitHub PAT format)
+      git remote add github "https://git:${GITHUB_TOKEN}@github.com/kljuicy/gitty.git" || git remote set-url github "https://git:${GITHUB_TOKEN}@github.com/kljuicy/gitty.git"
 
       echo "Pulling latest changes from github..."
-      git pull github ${CI_COMMIT_BRANCH}
+      git pull github ${CI_COMMIT_BRANCH} || echo "⚠️  Branch might not exist on GitHub yet, continuing..."
 
       echo "📤 Pushing ${CI_COMMIT_BRANCH} to GitHub..."
-      git push github ${CI_COMMIT_BRANCH}
+      git push github ${CI_COMMIT_BRANCH} || git push github ${CI_COMMIT_BRANCH} --set-upstream
 
       echo "🏷️ Pushing tags to GitHub..."
       git push github --tags || echo "No tags to push"
