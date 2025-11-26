@@ -1,5 +1,12 @@
 # @kljuicy/gitty
 
+## 1.0.3
+
+### Patch Changes
+
+- !12 - Upgraded Google libs + several core dependencies to keep the stack fresh, stable, and less janky. (#0)
+- !11 - Improved pipeline scripts (#0)
+
 ## 1.0.2
 
 ### Patch Changes

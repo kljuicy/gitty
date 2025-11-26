@@ -1,6 +1,6 @@
 {
   "name": "@kljuicy/gitty",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "🐥 Gitty - Your cute lil AI-powered Git sidekick",
   "type": "module",
   "main": "./dist/index.js",
