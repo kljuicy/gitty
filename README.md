@@ -500,11 +500,20 @@ gitty -P work -p "123" -v                  # Preview with work preset + ticket
 - **OpenAI**: `gpt-4o-mini` (default), `gpt-4o`, `gpt-3.5-turbo`
 - **Gemini**: `gemini-2.5-flash` (default), `gemini-1.5-flash`, `gemini-1.5-pro`, `gemini-3.0-pro`
 
+> 💡 **Note:** These are commonly used models. Gitty supports any model your provider offers - just specify it with `-m <model-name>`. Check your provider's documentation for the latest available models.
+
 ## 🧸 User Experience
 
 > 🐥 **Gitty says:** "Making Git fun since... well, just now!"
 
-Interactive terminal menu with diff preview, message selection, and editing options. Because commit messages should spark joy. ✨
+When you run `gitty`, here's what happens:
+
+1. **Diff Preview** - Gitty shows you a summary of your staged changes
+2. **AI Generation** - Three commit message options are generated based on your changes
+3. **Interactive Menu** - Choose from the options, edit one, regenerate, or quit
+4. **Confirmation** - Review your selected message and confirm to create the commit
+
+All with a clean, interactive terminal interface. Because commit messages should spark joy. ✨
 
 ## License
 
