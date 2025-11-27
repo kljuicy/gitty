@@ -1,5 +1,11 @@
 # @kljuicy/gitty
 
+## 1.0.4
+
+### Patch Changes
+
+- !13 - GITTY#10: Enhance security and robustness by validating inputs and sanitizing error messages (#10)
+
 ## 1.0.3
 
 ### Patch Changes
