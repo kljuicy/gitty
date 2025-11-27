@@ -376,6 +376,64 @@ describe('Git Utilities with Dependency Injection', () => {
 
   describe('Commit Operations', () => {
     describe('createCommit', () => {
+      it('should validate commit message length', async () => {
+        mockGit.checkIsRepo.mockResolvedValue(true);
+        const longMessage = 'a'.repeat(50001);
+
+        await expect(
+          createCommit(longMessage, mockGit as unknown as GitClient)
+        ).rejects.toThrow('Commit message too long (max 50,000 characters)');
+
+        expect(mockGit.commit).not.toHaveBeenCalled();
+      });
+
+      it('should reject empty commit messages', async () => {
+        mockGit.checkIsRepo.mockResolvedValue(true);
+
+        await expect(
+          createCommit('', mockGit as unknown as GitClient)
+        ).rejects.toThrow('Commit message cannot be empty');
+
+        await expect(
+          createCommit('   ', mockGit as unknown as GitClient)
+        ).rejects.toThrow('Commit message cannot be empty');
+
+        await expect(
+          createCommit('\t\n', mockGit as unknown as GitClient)
+        ).rejects.toThrow('Commit message cannot be empty');
+
+        expect(mockGit.commit).not.toHaveBeenCalled();
+      });
+
+      it('should accept valid commit messages', async () => {
+        mockGit.checkIsRepo.mockResolvedValue(true);
+        const validMessage = 'feat: add new feature';
+
+        await createCommit(validMessage, mockGit as unknown as GitClient);
+
+        expect(mockGit.commit).toHaveBeenCalledWith(validMessage);
+      });
+
+      it('should accept commit messages at the length limit', async () => {
+        mockGit.checkIsRepo.mockResolvedValue(true);
+        const maxLengthMessage = 'a'.repeat(50000);
+
+        await createCommit(maxLengthMessage, mockGit as unknown as GitClient);
+
+        expect(mockGit.commit).toHaveBeenCalledWith(maxLengthMessage);
+      });
+
+      it('should accept trimmed commit messages', async () => {
+        mockGit.checkIsRepo.mockResolvedValue(true);
+        const messageWithWhitespace = '  feat: add feature  ';
+
+        await createCommit(
+          messageWithWhitespace,
+          mockGit as unknown as GitClient
+        );
+
+        expect(mockGit.commit).toHaveBeenCalledWith(messageWithWhitespace);
+      });
       it('should create commit with message', async () => {
         mockGit.checkIsRepo.mockResolvedValue(true);
         const message = 'feat: add new feature';

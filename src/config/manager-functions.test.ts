@@ -260,13 +260,32 @@ describe('Config Manager Functions', () => {
   });
 
   describe('linkRepoToPreset', () => {
+    it('should validate preset name before linking', async () => {
+      const processExitSpy = vi
+        .spyOn(process, 'exit')
+        .mockImplementation(() => {
+          throw new Error('process.exit: 1');
+        });
+
+      await expect(linkRepoToPreset('../invalid')).rejects.toThrow(
+        'process.exit: 1'
+      );
+      await expect(linkRepoToPreset('preset name')).rejects.toThrow(
+        'process.exit: 1'
+      );
+      await expect(linkRepoToPreset('a'.repeat(101))).rejects.toThrow(
+        'process.exit: 1'
+      );
+
+      processExitSpy.mockRestore();
+    });
     it('should save preset link to local config', async () => {
       await linkRepoToPreset('work');
 
       expect(mocks.files.writeJsonFile).toHaveBeenCalledWith(
         '/test/repo/.git/gittyrc.json',
         { preset: 'work' },
-        { pretty: true }
+        { pretty: true, secure: true }
       );
     });
 
@@ -435,7 +454,7 @@ describe('Config Manager Functions', () => {
       expect(mocks.files.writeJsonFile).toHaveBeenCalledWith(
         '/test/repo/.git/gittyrc.json',
         { ...localConfig, defaultProvider: 'gemini' },
-        { pretty: true }
+        { pretty: true, secure: true }
       );
       expect(mocks.ui.showSuccess).toHaveBeenCalledWith(
         'Saved Google Gemini as default for this project'

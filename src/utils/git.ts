@@ -189,6 +189,15 @@ export async function createCommit(
   git: GitClient = getDefaultGitClient()
 ): Promise<void> {
   await ensureGitRepository(git);
+
+  // Validate message length (git typically allows up to ~50KB)
+  if (message.length > 50000) {
+    throw new Error('Commit message too long (max 50,000 characters)');
+  }
+  if (message.trim().length === 0) {
+    throw new Error('Commit message cannot be empty');
+  }
+
   await git.commit(message);
 }
 

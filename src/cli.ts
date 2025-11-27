@@ -16,6 +16,7 @@ import {
   validateProvider,
   validateStyle,
   validateTemperature,
+  validatePresetName,
 } from './utils/validation.ts';
 
 // Graceful exit on Ctrl+C - register this first!
@@ -130,6 +131,11 @@ Examples:
     try {
       // Validate argument combinations
       validateArgumentCombinations(options);
+
+      // Validate preset name if provided
+      if (options.preset) {
+        validatePresetName(options.preset);
+      }
 
       if (options.setKey) {
         await setApiKey(options.provider);

@@ -119,6 +119,67 @@ describe('File Utilities', () => {
       const result = await readJsonFile('/test/new-dir/output.json');
       expect(result).toEqual(data);
     });
+
+    it('should set secure permissions (0o600) for new files by default', async () => {
+      const data = { apiKey: 'secret-key' };
+      const fs = await import('fs/promises');
+
+      await writeJsonFile('/test/secure-config.json', data);
+
+      // Verify file was written
+      const result = await readJsonFile('/test/secure-config.json');
+      expect(result).toEqual(data);
+
+      // Verify permissions (on Unix-like systems)
+      if (process.platform !== 'win32') {
+        const stats = await fs.stat('/test/secure-config.json');
+        // Check that permissions are 0o600 (owner read/write only)
+        // mode & 0o777 gives us the permission bits
+        const mode = stats.mode & 0o777;
+        expect(mode).toBe(0o600);
+      }
+    });
+
+    it('should set secure permissions (0o600) for existing files when secure is true', async () => {
+      const data = { apiKey: 'secret-key' };
+      const fs = await import('fs/promises');
+
+      // Create an existing file with permissive permissions
+      await fs.writeFile('/test/existing-config.json', '{}', { mode: 0o644 });
+
+      // Write with secure flag - should update permissions
+      await writeJsonFile('/test/existing-config.json', data, { secure: true });
+
+      // Verify file was written
+      const result = await readJsonFile('/test/existing-config.json');
+      expect(result).toEqual(data);
+
+      // Verify permissions were updated to 0o600 (on Unix-like systems)
+      if (process.platform !== 'win32') {
+        const stats = await fs.stat('/test/existing-config.json');
+        const mode = stats.mode & 0o777;
+        expect(mode).toBe(0o600);
+      }
+    });
+
+    it('should not set secure permissions when secure is false', async () => {
+      const data = { test: 'data' };
+      const fs = await import('fs/promises');
+
+      await writeJsonFile('/test/non-secure.json', data, { secure: false });
+
+      // Verify file was written
+      const result = await readJsonFile('/test/non-secure.json');
+      expect(result).toEqual(data);
+
+      // On Unix-like systems, verify permissions are not restricted
+      if (process.platform !== 'win32') {
+        const stats = await fs.stat('/test/non-secure.json');
+        const mode = stats.mode & 0o777;
+        // Should have default permissions (typically 0o644), not 0o600
+        expect(mode).not.toBe(0o600);
+      }
+    });
   });
 
   describe('fileExists', () => {
@@ -204,6 +265,67 @@ describe('File Utilities', () => {
 
       const written = await readTextFile('/test/new-dir/file.txt');
       expect(written).toBe(content);
+    });
+
+    it('should set secure permissions (0o600) for new files by default', async () => {
+      const content = 'sensitive data';
+      const fs = await import('fs/promises');
+
+      await writeTextFile('/test/secure-file.txt', content);
+
+      // Verify file was written
+      const result = await readTextFile('/test/secure-file.txt');
+      expect(result).toBe(content);
+
+      // Verify permissions (on Unix-like systems)
+      if (process.platform !== 'win32') {
+        const stats = await fs.stat('/test/secure-file.txt');
+        const mode = stats.mode & 0o777;
+        expect(mode).toBe(0o600);
+      }
+    });
+
+    it('should set secure permissions (0o600) for existing files when secure is true', async () => {
+      const content = 'updated sensitive data';
+      const fs = await import('fs/promises');
+
+      // Create an existing file with permissive permissions
+      await fs.writeFile('/test/existing-file.txt', 'old content', {
+        mode: 0o644,
+      });
+
+      // Write with secure flag - should update permissions
+      await writeTextFile('/test/existing-file.txt', content, { secure: true });
+
+      // Verify file was written
+      const result = await readTextFile('/test/existing-file.txt');
+      expect(result).toBe(content);
+
+      // Verify permissions were updated to 0o600 (on Unix-like systems)
+      if (process.platform !== 'win32') {
+        const stats = await fs.stat('/test/existing-file.txt');
+        const mode = stats.mode & 0o777;
+        expect(mode).toBe(0o600);
+      }
+    });
+
+    it('should not set secure permissions when secure is false', async () => {
+      const content = 'public data';
+      const fs = await import('fs/promises');
+
+      await writeTextFile('/test/non-secure.txt', content, { secure: false });
+
+      // Verify file was written
+      const result = await readTextFile('/test/non-secure.txt');
+      expect(result).toBe(content);
+
+      // On Unix-like systems, verify permissions are not restricted
+      if (process.platform !== 'win32') {
+        const stats = await fs.stat('/test/non-secure.txt');
+        const mode = stats.mode & 0o777;
+        // Should have default permissions (typically 0o644), not 0o600
+        expect(mode).not.toBe(0o600);
+      }
     });
   });
 

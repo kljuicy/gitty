@@ -1,7 +1,7 @@
 import Conf from 'conf';
 import { join } from 'path';
 import { homedir } from 'os';
-import { mkdirSync, existsSync, readFileSync } from 'fs';
+import { mkdirSync, existsSync, readFileSync, chmodSync } from 'fs';
 import type {
   GittyConfig,
   LocalConfig,
@@ -12,6 +12,7 @@ import type {
 import { GittyConfigSchema, LocalConfigSchema } from '../types/index';
 import { getProviderDisplayName } from '../utils/providers';
 import { writeJsonFile, readJsonFileWithFriendlyErrors } from '../utils/files';
+import { validatePresetName } from '../utils/validation';
 import { createSpinner } from '../ui/spinner';
 import { promptWithGracefulExit } from '../ui/prompts';
 import { getGitRoot } from '../utils/git';
@@ -21,9 +22,14 @@ import { shouldShowProgress } from '../utils/environment';
 const configDir = join(homedir(), '.gitty');
 
 try {
-  mkdirSync(configDir, { recursive: true });
+  mkdirSync(configDir, { recursive: true, mode: 0o700 });
 } catch {
-  // Directory exists
+  // Directory exists - try to set permissions if it already exists
+  try {
+    chmodSync(configDir, 0o700);
+  } catch {
+    // Ignore if we can't set permissions
+  }
 }
 
 // Lazy-loaded global config with error handling
@@ -271,6 +277,10 @@ export function saveApiKey(apiKey: string, provider?: AIProvider): void {
 export async function getLocalConfig(): Promise<LocalConfig | null> {
   try {
     const gitRoot = await getGitRoot();
+    // Validate git root path for security
+    if (!gitRoot || gitRoot.includes('\0') || gitRoot.length > 4096) {
+      throw new Error('Invalid git repository root path');
+    }
     const configPath = join(gitRoot, '.git', 'gittyrc.json');
 
     // Check if file exists first
@@ -303,6 +313,14 @@ export async function getLocalConfig(): Promise<LocalConfig | null> {
 
     return LocalConfigSchema.parse(data);
   } catch (error) {
+    // Re-throw validation errors (they should propagate)
+    if (
+      error instanceof Error &&
+      error.message === 'Invalid git repository root path'
+    ) {
+      throw error;
+    }
+
     // For local config, show warning but fall back gracefully
     if (
       error instanceof Error &&
@@ -315,7 +333,7 @@ export async function getLocalConfig(): Promise<LocalConfig | null> {
       );
     }
 
-    // For any local config error, gracefully fall back to null
+    // For any other local config error (including git errors), gracefully fall back to null
     // This allows the system to use global config instead
     return null;
   }
@@ -327,22 +345,30 @@ export async function getLocalConfig(): Promise<LocalConfig | null> {
  */
 export async function saveLocalConfig(config: LocalConfig): Promise<void> {
   const gitRoot = await getGitRoot();
+  // Validate git root path for security
+  if (!gitRoot || gitRoot.includes('\0') || gitRoot.length > 4096) {
+    throw new Error('Invalid git repository root path');
+  }
   const configPath = join(gitRoot, '.git', 'gittyrc.json');
   const existing = await getLocalConfig();
   const merged = { ...existing, ...config };
   const validated = LocalConfigSchema.parse(merged);
-  writeJsonFile(configPath, validated, { pretty: true });
+  writeJsonFile(configPath, validated, { pretty: true, secure: true });
 }
 
 /**
  * Link current repo to a preset
  */
 export async function linkRepoToPreset(presetName: string): Promise<void> {
+  // Validate preset name for security
+  const validatedPresetName = validatePresetName(presetName);
   const globalConfigData = getGlobalConfig();
-  if (!globalConfigData.presets[presetName]) {
-    throw new Error(`Preset "${presetName}" not found in global config`);
+  if (!globalConfigData.presets[validatedPresetName]) {
+    throw new Error(
+      `Preset "${validatedPresetName}" not found in global config`
+    );
   }
-  await saveLocalConfig({ preset: presetName });
+  await saveLocalConfig({ preset: validatedPresetName });
 }
 
 /**
@@ -559,7 +585,9 @@ export async function resolveConfig(
 export function getPreset(
   name: string
 ): GittyConfig['presets'][string] | undefined {
-  return getGlobalConfig().presets[name];
+  // Validate preset name for security
+  const validatedName = validatePresetName(name);
+  return getGlobalConfig().presets[validatedName];
 }
 
 /**
@@ -569,7 +597,9 @@ export function savePreset(
   name: string,
   preset: GittyConfig['presets'][string]
 ): void {
+  // Validate preset name for security
+  const validatedName = validatePresetName(name);
   const config = getGlobalConfig();
-  config.presets[name] = preset;
+  config.presets[validatedName] = preset;
   saveGlobalConfig(config);
 }

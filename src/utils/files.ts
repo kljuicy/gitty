@@ -4,6 +4,7 @@ import {
   access,
   mkdir,
   stat,
+  chmod,
   constants,
 } from 'fs/promises';
 import { dirname } from 'path';
@@ -131,20 +132,40 @@ export async function readJsonFile<T = any>(filePath: string): Promise<T> {
 export async function writeJsonFile(
   filePath: string,
   data: any,
-  options: { pretty?: boolean; ensureDir?: boolean } = {}
+  options: { pretty?: boolean; ensureDir?: boolean; secure?: boolean } = {}
 ): Promise<void> {
   try {
     // Ensure directory exists if requested
     if (options.ensureDir) {
       const dir = dirname(filePath);
-      await mkdir(dir, { recursive: true });
+      await mkdir(dir, { recursive: true, mode: 0o700 });
     }
 
     const content = options.pretty
       ? JSON.stringify(data, null, 2)
       : JSON.stringify(data);
 
-    await writeFile(filePath, content, 'utf-8');
+    // Set secure file permissions (0o600) for sensitive files like config files
+    const writeOptions: { encoding: BufferEncoding; mode?: number } = {
+      encoding: 'utf-8',
+    };
+    if (options.secure !== false) {
+      // Default to secure unless explicitly disabled
+      writeOptions.mode = 0o600;
+    }
+
+    await writeFile(filePath, content, writeOptions);
+
+    // Explicitly set permissions after writing to ensure existing files get restricted permissions
+    // Note: writeFile's mode parameter only applies to newly created files, not existing ones
+    if (options.secure !== false) {
+      try {
+        await chmod(filePath, 0o600);
+      } catch {
+        // Ignore chmod errors (e.g., on Windows or if file doesn't exist)
+        // The writeFile with mode should have handled new files
+      }
+    }
   } catch (error) {
     throw new Error(`Failed to write JSON to ${filePath}: ${error}`);
   }
@@ -257,16 +278,36 @@ export async function readTextFile(filePath: string): Promise<string> {
 export async function writeTextFile(
   filePath: string,
   content: string,
-  options: { ensureDir?: boolean } = {}
+  options: { ensureDir?: boolean; secure?: boolean } = {}
 ): Promise<void> {
   try {
     // Ensure directory exists if requested
     if (options.ensureDir) {
       const dir = dirname(filePath);
-      await mkdir(dir, { recursive: true });
+      await mkdir(dir, { recursive: true, mode: 0o700 });
     }
 
-    await writeFile(filePath, content, 'utf-8');
+    // Set secure file permissions (0o600) for sensitive files
+    const writeOptions: { encoding: BufferEncoding; mode?: number } = {
+      encoding: 'utf-8',
+    };
+    if (options.secure !== false) {
+      // Default to secure unless explicitly disabled
+      writeOptions.mode = 0o600;
+    }
+
+    await writeFile(filePath, content, writeOptions);
+
+    // Explicitly set permissions after writing to ensure existing files get restricted permissions
+    // Note: writeFile's mode parameter only applies to newly created files, not existing ones
+    if (options.secure !== false) {
+      try {
+        await chmod(filePath, 0o600);
+      } catch {
+        // Ignore chmod errors (e.g., on Windows or if file doesn't exist)
+        // The writeFile with mode should have handled new files
+      }
+    }
   } catch (error) {
     throw new Error(`Failed to write file ${filePath}: ${error}`);
   }
@@ -276,9 +317,19 @@ export async function writeTextFile(
  * Create a directory recursively if it doesn't exist
  * @param dirPath - Directory path to create
  */
-export async function ensureDirectory(dirPath: string): Promise<void> {
+export async function ensureDirectory(
+  dirPath: string,
+  options: { secure?: boolean } = {}
+): Promise<void> {
   try {
-    await mkdir(dirPath, { recursive: true });
+    const mkdirOptions: { recursive: boolean; mode?: number } = {
+      recursive: true,
+    };
+    if (options.secure !== false) {
+      // Default to secure unless explicitly disabled
+      mkdirOptions.mode = 0o700;
+    }
+    await mkdir(dirPath, mkdirOptions);
   } catch (error) {
     throw new Error(`Failed to create directory ${dirPath}: ${error}`);
   }

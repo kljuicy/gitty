@@ -201,6 +201,35 @@ describe('Local Config File I/O (Mock File Testing)', () => {
     expect(result).toBeNull();
   });
 
+  it('should reject invalid git root paths', async () => {
+    // Test null git root - should throw before trying to read file
+    mocks.getGitRoot.mockResolvedValue(null as any);
+    await expect(getLocalConfig()).rejects.toThrow(
+      'Invalid git repository root path'
+    );
+
+    // Test git root with null byte
+    mocks.getGitRoot.mockResolvedValue('/path/with\0null');
+    await expect(getLocalConfig()).rejects.toThrow(
+      'Invalid git repository root path'
+    );
+
+    // Test git root that is too long
+    mocks.getGitRoot.mockResolvedValue('a'.repeat(4097));
+    await expect(getLocalConfig()).rejects.toThrow(
+      'Invalid git repository root path'
+    );
+
+    // Test empty string git root
+    mocks.getGitRoot.mockResolvedValue('');
+    await expect(getLocalConfig()).rejects.toThrow(
+      'Invalid git repository root path'
+    );
+
+    // Reset to valid path
+    mocks.getGitRoot.mockResolvedValue(tempGitRoot);
+  });
+
   it('should return null for invalid JSON in config file', async () => {
     // Add invalid JSON file to mock filesystem
     mock({

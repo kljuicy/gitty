@@ -23,6 +23,7 @@ import {
 } from '../../ui/menu';
 import { helpForError, helpGitSetup } from '../../ui/error-help';
 import { shouldShowProgress } from '../../utils/environment';
+import { sanitizeErrorMessage } from '../../utils/sanitize';
 import chalk from 'chalk';
 import { formatDiffStats } from '../../utils/diff';
 
@@ -194,8 +195,10 @@ export async function generateCommit(options: CLIOptions): Promise<void> {
           console.log(finalMessage);
           return;
         } catch (error) {
-          const errorMessage =
-            error instanceof Error ? error.message : String(error);
+          const errorMessage = sanitizeErrorMessage(
+            error instanceof Error ? error.message : String(error),
+            config.apiKey
+          );
 
           if (errorMessage.includes('nothing to commit')) {
             showError('Nothing to commit');
@@ -209,8 +212,10 @@ export async function generateCommit(options: CLIOptions): Promise<void> {
           process.exit(1);
         }
       } catch (error) {
-        const errorMessage =
-          error instanceof Error ? error.message : String(error);
+        const errorMessage = sanitizeErrorMessage(
+          error instanceof Error ? error.message : String(error),
+          config.apiKey
+        );
 
         if (
           errorMessage.toLowerCase().includes('api key') ||
@@ -252,8 +257,10 @@ export async function generateCommit(options: CLIOptions): Promise<void> {
       }
     }
   } catch (error) {
-    const errorMessage =
-      error instanceof Error ? error.message : 'An unexpected error occurred';
+    // Note: We don't have config.apiKey here, but sanitize will still work
+    const errorMessage = sanitizeErrorMessage(
+      error instanceof Error ? error.message : 'An unexpected error occurred'
+    );
     showError(errorMessage);
     helpForError('general');
     process.exit(1);

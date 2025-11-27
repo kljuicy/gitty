@@ -1,5 +1,6 @@
 import { ensureGitRepository, getRepositoryInfo } from '../../utils/git';
 import { getGlobalConfig, linkRepoToPreset } from '../../config/manager';
+import { validatePresetName } from '../../utils/validation';
 import { createSpinner } from '../../ui/spinner';
 import {
   showSection,
@@ -11,6 +12,8 @@ import {
 import { shouldShowProgress } from '../../utils/environment';
 
 export async function addRepo(presetName: string): Promise<void> {
+  // Validate preset name for security
+  const validatedPresetName = validatePresetName(presetName);
   const spinner = shouldShowProgress() ? await createSpinner() : null;
   if (spinner) {
     spinner.start('Setting up repository...');
@@ -19,20 +22,20 @@ export async function addRepo(presetName: string): Promise<void> {
   try {
     await ensureGitRepository();
     const globalConfig = getGlobalConfig();
-    const preset = globalConfig.presets[presetName];
+    const preset = globalConfig.presets[validatedPresetName];
 
     if (!preset) {
       if (spinner) {
-        spinner.fail(`Preset "${presetName}" not found`);
+        spinner.fail(`Preset "${validatedPresetName}" not found`);
       } else {
-        showError(`Preset "${presetName}" not found`);
+        showError(`Preset "${validatedPresetName}" not found`);
       }
       showHint('Create presets in ~/.gitty/config.json');
       return;
     }
 
     const repoInfo = await getRepositoryInfo();
-    await linkRepoToPreset(presetName);
+    await linkRepoToPreset(validatedPresetName);
 
     if (spinner) {
       spinner.succeed('Repository linked to preset successfully!');
@@ -43,7 +46,7 @@ export async function addRepo(presetName: string): Promise<void> {
     showSection('Repository Configuration', '📁');
     showConfigLine('Branch', repoInfo.branch);
     showConfigLine('Remote', repoInfo.remoteUrl || 'none');
-    showConfigLine('Linked preset', presetName);
+    showConfigLine('Linked preset', validatedPresetName);
 
     showSection('Preset Details', '🎯');
     showConfigLine('Default Provider', preset.defaultProvider || 'default');

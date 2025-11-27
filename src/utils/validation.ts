@@ -294,3 +294,33 @@ export function validateUrl(value: string): string {
     process.exit(1);
   }
 }
+
+/**
+ * Validate preset name
+ * Ensures preset names are safe and don't contain path traversal or special characters
+ */
+export function validatePresetName(name: string): string {
+  if (!name || name.trim().length === 0) {
+    showError('Preset name cannot be empty');
+    process.exit(1);
+  }
+
+  const trimmed = name.trim();
+
+  if (trimmed.length > 100) {
+    showError('Preset name too long (max 100 characters)');
+    showHint(`Got ${trimmed.length} characters, maximum is 100`);
+    process.exit(1);
+  }
+
+  // Allow alphanumeric, hyphens, underscores only
+  if (!/^[a-zA-Z0-9_-]+$/.test(trimmed)) {
+    showError(
+      'Preset name can only contain letters, numbers, hyphens, and underscores'
+    );
+    showHint('Examples: "work", "personal", "project-1", "my_preset"');
+    process.exit(1);
+  }
+
+  return trimmed;
+}

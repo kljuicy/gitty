@@ -10,6 +10,7 @@ import {
   validateOneOf,
   validateFilePath,
   validateUrl,
+  validatePresetName,
 } from './validation';
 import { createValidationTestHelpers } from '../__tests__/utils';
 import type { MockedFunction } from 'vitest';
@@ -375,6 +376,146 @@ describe('Validation Utilities', () => {
       expect(mockUI.showError).toHaveBeenCalledWith(
         'Invalid URL format: just text'
       );
+    });
+  });
+
+  describe('validatePresetName', () => {
+    it('should return valid preset names', () => {
+      expect(validatePresetName('work')).toBe('work');
+      expect(validatePresetName('personal')).toBe('personal');
+      expect(validatePresetName('project-1')).toBe('project-1');
+      expect(validatePresetName('my_preset')).toBe('my_preset');
+      expect(validatePresetName('preset123')).toBe('preset123');
+      expect(validatePresetName('a')).toBe('a');
+      expect(validatePresetName('a'.repeat(100))).toBe('a'.repeat(100));
+    });
+
+    it('should trim whitespace', () => {
+      expect(validatePresetName('  work  ')).toBe('work');
+      expect(validatePresetName('\tpersonal\n')).toBe('personal');
+    });
+
+    it('should reject empty names', () => {
+      expect(() => validatePresetName('')).toThrow('process.exit: 1');
+      expect(() => validatePresetName('   ')).toThrow('process.exit: 1');
+      expect(() => validatePresetName('\t\n')).toThrow('process.exit: 1');
+
+      expect(mockUI.showError).toHaveBeenCalledWith(
+        'Preset name cannot be empty'
+      );
+    });
+
+    it('should reject names that are too long', () => {
+      const longName = 'a'.repeat(101);
+      expect(() => validatePresetName(longName)).toThrow('process.exit: 1');
+
+      expect(mockUI.showError).toHaveBeenCalledWith(
+        'Preset name too long (max 100 characters)'
+      );
+      expect(mockUI.showHint).toHaveBeenCalledWith(
+        'Got 101 characters, maximum is 100'
+      );
+    });
+
+    it('should reject names with invalid characters', () => {
+      expect(() => validatePresetName('preset name')).toThrow(
+        'process.exit: 1'
+      );
+      expect(() => validatePresetName('preset.name')).toThrow(
+        'process.exit: 1'
+      );
+      expect(() => validatePresetName('preset/name')).toThrow(
+        'process.exit: 1'
+      );
+      expect(() => validatePresetName('../preset')).toThrow('process.exit: 1');
+      expect(() => validatePresetName('preset\\name')).toThrow(
+        'process.exit: 1'
+      );
+      expect(() => validatePresetName('preset@name')).toThrow(
+        'process.exit: 1'
+      );
+      expect(() => validatePresetName('preset#name')).toThrow(
+        'process.exit: 1'
+      );
+      expect(() => validatePresetName('preset$name')).toThrow(
+        'process.exit: 1'
+      );
+      expect(() => validatePresetName('preset%name')).toThrow(
+        'process.exit: 1'
+      );
+      expect(() => validatePresetName('preset&name')).toThrow(
+        'process.exit: 1'
+      );
+      expect(() => validatePresetName('preset*name')).toThrow(
+        'process.exit: 1'
+      );
+      expect(() => validatePresetName('preset+name')).toThrow(
+        'process.exit: 1'
+      );
+      expect(() => validatePresetName('preset=name')).toThrow(
+        'process.exit: 1'
+      );
+      expect(() => validatePresetName('preset[name]')).toThrow(
+        'process.exit: 1'
+      );
+      expect(() => validatePresetName('preset{name}')).toThrow(
+        'process.exit: 1'
+      );
+      expect(() => validatePresetName('preset|name')).toThrow(
+        'process.exit: 1'
+      );
+      expect(() => validatePresetName('preset:name')).toThrow(
+        'process.exit: 1'
+      );
+      expect(() => validatePresetName('preset;name')).toThrow(
+        'process.exit: 1'
+      );
+      expect(() => validatePresetName('preset"name')).toThrow(
+        'process.exit: 1'
+      );
+      expect(() => validatePresetName("preset'name")).toThrow(
+        'process.exit: 1'
+      );
+      expect(() => validatePresetName('preset<name>')).toThrow(
+        'process.exit: 1'
+      );
+      expect(() => validatePresetName('preset,name')).toThrow(
+        'process.exit: 1'
+      );
+      expect(() => validatePresetName('preset?name')).toThrow(
+        'process.exit: 1'
+      );
+      expect(() => validatePresetName('preset!name')).toThrow(
+        'process.exit: 1'
+      );
+
+      expect(mockUI.showError).toHaveBeenCalledWith(
+        'Preset name can only contain letters, numbers, hyphens, and underscores'
+      );
+      expect(mockUI.showHint).toHaveBeenCalledWith(
+        'Examples: "work", "personal", "project-1", "my_preset"'
+      );
+    });
+
+    it('should reject path traversal attempts', () => {
+      expect(() => validatePresetName('../preset')).toThrow('process.exit: 1');
+      expect(() => validatePresetName('..\\preset')).toThrow('process.exit: 1');
+      expect(() => validatePresetName('../../preset')).toThrow(
+        'process.exit: 1'
+      );
+      expect(() => validatePresetName('preset/../other')).toThrow(
+        'process.exit: 1'
+      );
+    });
+
+    it('should accept valid edge cases', () => {
+      expect(validatePresetName('a')).toBe('a');
+      expect(validatePresetName('1')).toBe('1');
+      expect(validatePresetName('_')).toBe('_');
+      expect(validatePresetName('-')).toBe('-');
+      expect(validatePresetName('a1')).toBe('a1');
+      expect(validatePresetName('1a')).toBe('1a');
+      expect(validatePresetName('a-b_c')).toBe('a-b_c');
     });
   });
 
